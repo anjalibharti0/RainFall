@@ -7,45 +7,45 @@ const api = axios.create({
   timeout: 30000,
 });
 
+// Main forecast endpoint - uses ML-corrected data
 export const fetchForecast = async (date, leadTime = 24) => {
-  const { data } = await api.get('/forecast/process', {
-    params: { date, lead_time: leadTime, model_source: 'GFS' },
-  });
-  return data;
-};
-
-export const fetchRegime = async (date, leadTime = 24) => {
-  const { data } = await api.get(`/regime/classify/${date}`, {
-    params: { lead_time: leadTime },
-  });
-  return data;
-};
-
-export const fetchDistrictForecast = async (districtId, date, leadTime = 24) => {
-  const { data } = await api.get(`/forecast/district/${districtId}`, {
+  const { data } = await api.get('/forecast', {
     params: { date, lead_time: leadTime },
   });
   return data;
 };
 
-export const fetchProbabilityMap = async (date, leadTime = 24) => {
-  const { data } = await api.get(`/probability/map/${date}`, {
-    params: { lead_time: leadTime },
-  });
-  return data;
-};
-
+// Verification report
 export const fetchVerificationReport = async (date, leadTime = 24) => {
-  const { data } = await api.get(`/verification/report/${date}`, {
-    params: { lead_time: leadTime },
+  const { data } = await api.get('/verification', {
+    params: { date, lead_time: leadTime },
   });
   return data;
 };
 
-export const fetchForecastTable = async (date, leadTime = 24) => {
-  const { data } = await api.get('/forecast/table/${date}', {
-    params: { date, lead_time: leadTime },
+// IMD Real-time warnings
+export const fetchIMDWarnings = async () => {
+  const { data } = await api.get('/imd/warnings');
+  return data;
+};
+
+// IMD Real-time rainfall
+export const fetchIMDRainfall = async () => {
+  const { data } = await api.get('/imd/rainfall');
+  return data;
+};
+
+// IMD AWS station data
+export const fetchIMDAWS = async (stateId = null) => {
+  const { data } = await api.get('/imd/aws', {
+    params: stateId ? { state_id: stateId } : {},
   });
+  return data;
+};
+
+// IMD warning codes reference
+export const fetchWarningCodes = async () => {
+  const { data } = await api.get('/warning/codes');
   return data;
 };
 
