@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 180" fill="none">
+  <!-- Dark cloud body -->
+  <ellipse cx="100" cy="60" rx="65" ry="45" fill="#6B7D8E"/>
+  <ellipse cx="60" cy="70" rx="45" ry="35" fill="#5C6E7F"/>
+  <ellipse cx="140" cy="70" rx="45" ry="35" fill="#5C6E7F"/>
+  <ellipse cx="100" cy="75" rx="70" ry="30" fill="#7A8C9D"/>
+  <!-- Heavy rain drops -->
+  <g fill="#4A90B8" stroke="#3A7A9E" stroke-width="0.5">
+    <path d="M45 110 Q45 125 38 140 Q45 136 52 140 Q45 125 45 110Z"/>
+    <path d="M65 105 Q65 122 58 138 Q65 134 72 138 Q65 122 65 105Z"/>
+    <path d="M85 115 Q85 130 78 145 Q85 141 92 145 Q85 130 85 115Z"/>
+    <path d="M105 108 Q105 124 98 140 Q105 136 112 140 Q105 124 105 108Z"/>
+    <path d="M125 112 Q125 128 118 144 Q125 140 132 144 Q125 128 125 112Z"/>
+    <path d="M145 106 Q145 122 138 138 Q145 134 152 138 Q145 122 145 106Z"/>
+    <path d="M55 140 Q55 152 50 162 Q55 159 60 162 Q55 152 55 140Z"/>
+    <path d="M95 145 Q95 157 90 167 Q95 164 100 167 Q95 157 95 145Z"/>
+    <path d="M135 142 Q135 154 130 164 Q135 161 140 164 Q135 154 135 142Z"/>
+  </g>
+</svg>
