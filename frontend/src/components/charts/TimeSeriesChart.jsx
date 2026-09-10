@@ -1,54 +1,68 @@
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { timeSeriesData } from '../../data/mockData';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { useTheme } from '../../context/ThemeContext';
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload) return null;
-  return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-3">
-      <div className="text-[12px] font-bold text-gray-900 mb-1.5">{label}</div>
-      {payload.map((p, i) => (
-        <div key={i} className="flex items-center gap-2 text-[12px]">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-          <span className="text-gray-500">{p.name}:</span>
-          <span className="font-semibold">{p.value.toFixed(1)} mm</span>
-        </div>
-      ))}
-    </div>
-  );
+const generateTimeSeries = () => {
+  const data = [];
+  for (let i = 1; i <= 7; i++) {
+    const base = 20 + Math.sin(i * 0.8) * 15;
+    data.push({
+      day: `Sep ${i}`,
+      Observed: Math.round((base + Math.random() * 8) * 10) / 10,
+      'Raw NWP': Math.round((base * 1.2 + Math.random() * 12) * 10) / 10,
+      'AI Corrected': Math.round((base * 1.05 + Math.random() * 6) * 10) / 10,
+    });
+  }
+  return data;
 };
 
-export default function TimeSeriesChart() {
-  return (
-    <div className="dashboard-card p-0 overflow-hidden">
-      <div className="px-5 py-3.5 border-b border-gray-100">
-        <h3 className="text-[15px] font-bold text-gray-900 tracking-[-0.01em]">30-Day Time Series</h3>
-        <p className="text-[11px] text-gray-400 mt-0.5">Observed vs Forecast · District mean</p>
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-800 rounded-xl shadow-xl border border-slate-700 p-3">
+        <p className="text-[12px] font-bold text-white mb-1">{label}</p>
+        {payload.map(p => (
+          <p key={p.name} className="text-[11px]" style={{ color: p.color }}>
+            {p.name}: <span className="font-semibold">{p.value} mm</span>
+          </p>
+        ))}
       </div>
-      <div className="p-5">
-        <div className="h-[280px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={timeSeriesData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-              <defs>
-                <linearGradient id="gradObs" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="gradCorr" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.15}/>
-                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} interval={4} />
-              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} iconType="circle" iconSize={8} />
-              <Area type="monotone" dataKey="observed" stroke="#3b82f6" fill="url(#gradObs)" strokeWidth={2} name="Observed" dot={false} />
-              <Area type="monotone" dataKey="raw" stroke="#f87171" fill="none" strokeWidth={1.5} strokeDasharray="4 4" name="Raw NWP" dot={false} />
-              <Area type="monotone" dataKey="corrected" stroke="#22c55e" fill="url(#gradCorr)" strokeWidth={2} name="Corrected" dot={false} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+    );
+  }
+  return null;
+};
+
+export default function TimeSeriesChart({ districts = [] }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const data = generateTimeSeries();
+
+  return (
+    <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/30' : 'bg-white border-gray-200'} rounded-2xl border p-5`}>
+      <h3 className={`text-[14px] font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-1`}>7-Day Forecast Trend</h3>
+      <p className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-400'} mb-4`}>Observed vs Raw NWP vs AI Corrected</p>
+      <div className="h-[260px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id="gradObs" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#60a5fa" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="gradCorr" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#34d399" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1e293b' : '#e5e7eb'} />
+            <XAxis dataKey="day" tick={{ fontSize: 11, fill: isDark ? '#64748b' : '#9ca3af' }} />
+            <YAxis tick={{ fontSize: 11, fill: isDark ? '#64748b' : '#9ca3af' }} />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend wrapperStyle={{ fontSize: 11, color: isDark ? '#94a3b8' : '#6b7280' }} />
+            <Area type="monotone" dataKey="Observed" stroke="#60a5fa" fill="url(#gradObs)" strokeWidth={2} />
+            <Area type="monotone" dataKey="Raw NWP" stroke="#f87171" fill="none" strokeWidth={2} strokeDasharray="5 5" />
+            <Area type="monotone" dataKey="AI Corrected" stroke="#34d399" fill="url(#gradCorr)" strokeWidth={2} />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );

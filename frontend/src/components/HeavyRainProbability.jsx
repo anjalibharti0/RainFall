@@ -1,54 +1,45 @@
 import { CloudRain } from 'lucide-react';
-import { districtForecasts } from '../data/mockData';
+import { useTheme } from '../context/ThemeContext';
 
-export default function HeavyRainProbability() {
-  const avgHeavy = districtForecasts.reduce((s, d) => s + d.pHeavy, 0) / districtForecasts.length;
-  const avgVeryHeavy = districtForecasts.reduce((s, d) => s + d.pVeryHeavy, 0) / districtForecasts.length;
-  const avgExtreme = districtForecasts.reduce((s, d) => s + d.pExtreme, 0) / districtForecasts.length;
+export default function HeavyRainProbability({ districts = [] }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  if (districts.length === 0) {
+    return (
+      <div className="glass-card overflow-hidden h-full flex flex-col">
+        <div className={`px-5 py-4 border-b ${isDark ? 'border-white/5' : 'border-gray-100'}`}>
+          <h3 className={`text-[15px] font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Heavy Rainfall Probability</h3>
+        </div>
+        <div className="p-5 flex-1 flex items-center justify-center text-[12px] text-slate-500">Loading...</div>
+      </div>
+    );
+  }
+
+  const avgHeavy = districts.reduce((s, d) => s + (d.p_heavy || d.pHeavy || 0), 0) / districts.length;
+  const avgVeryHeavy = districts.reduce((s, d) => s + (d.p_very_heavy || d.pVeryHeavy || 0), 0) / districts.length;
+  const avgExtreme = districts.reduce((s, d) => s + (d.p_extreme || d.pExtreme || 0), 0) / districts.length;
 
   const categories = [
-    {
-      label: '> 64.5 mm (Heavy)',
-      value: (avgHeavy * 100).toFixed(0),
-      color: 'text-amber-700',
-      bg: 'bg-amber-50',
-      border: 'border-amber-100',
-      iconBg: 'bg-amber-100',
-    },
-    {
-      label: '> 115.6 mm (Very Heavy)',
-      value: (avgVeryHeavy * 100).toFixed(0),
-      color: 'text-rose-600',
-      bg: 'bg-rose-50',
-      border: 'border-rose-100',
-      iconBg: 'bg-rose-100',
-    },
-    {
-      label: '> 204.5 mm (Ext. Heavy)',
-      value: (avgExtreme * 100).toFixed(0),
-      color: 'text-purple-700',
-      bg: 'bg-purple-50',
-      border: 'border-purple-100',
-      iconBg: 'bg-purple-100',
-    },
+    { label: '> 64.5 mm (Heavy)', value: (avgHeavy * 100).toFixed(0), bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+    { label: '> 115.6 mm (Very Heavy)', value: (avgVeryHeavy * 100).toFixed(0), bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/20' },
+    { label: '> 204.5 mm (Ext. Heavy)', value: (avgExtreme * 100).toFixed(0), bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/20' },
   ];
 
   return (
-    <div className="dashboard-card p-0 overflow-hidden">
-      <div className="px-5 py-4 border-b border-gray-100">
-        <h3 className="text-[15px] font-bold text-gray-900 tracking-[-0.01em]">
-          Heavy Rainfall Probability <span className="text-gray-400 font-normal text-[12px]">(Selected Area)</span>
-        </h3>
+    <div className="glass-card overflow-hidden h-full flex flex-col">
+      <div className={`px-5 py-4 border-b ${isDark ? 'border-white/5' : 'border-gray-100'}`}>
+        <h3 className={`text-[15px] font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Heavy Rainfall Probability <span className={`font-normal text-[12px] ${isDark ? 'text-slate-400' : 'text-gray-400'}`}>(All Districts Avg)</span></h3>
       </div>
-      <div className="p-5 grid grid-cols-3 gap-4">
+      <div className="p-5 flex flex-col gap-4 flex-1">
         {categories.map((c) => (
-          <div key={c.label} className={`${c.bg} ${c.border} border rounded-xl p-4 text-center`}>
-            <div className={`w-10 h-10 rounded-lg ${c.iconBg} flex items-center justify-center mx-auto mb-3`}>
-              <CloudRain className={`w-5 h-5 ${c.color}`} />
+          <div key={c.label} className={`border ${c.border} rounded-xl p-4 flex items-center gap-4`}>
+            <div className={`w-12 h-12 rounded-xl ${c.bg} flex items-center justify-center flex-shrink-0`}>
+              <CloudRain className={`w-6 h-6 ${c.text}`} />
             </div>
-            <div className="text-[12px] font-medium text-gray-500 mb-1">{c.label}</div>
-            <div className={`text-[28px] font-extrabold tracking-[-0.03em] ${c.color}`}>
-              {c.value}%
+            <div>
+              <div className={`text-[12px] font-medium ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{c.label}</div>
+              <div className={`text-[28px] font-extrabold tracking-[-0.03em] ${c.text}`}>{c.value}%</div>
             </div>
           </div>
         ))}

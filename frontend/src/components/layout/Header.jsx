@@ -1,87 +1,156 @@
-import { Cloud, Calendar, ChevronDown, RefreshCw, Activity } from 'lucide-react';
-import { REGIMES } from '../../data/mockData';
+import { useState, useEffect, useRef } from 'react';
+import { Calendar, MapPin, ChevronDown, Sun, Moon, Search } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
+import { fetchDistrictSearch } from '../../services/api';
 
 export default function Header({ selectedDate, setSelectedDate, leadTime, setLeadTime, regime, onRefresh, loading }) {
-  const regimeInfo = regime ? REGIMES[regime.type] || REGIMES.active_monsoon : REGIMES.active_monsoon;
-  const regimeLabel = regimeInfo.label;
-  const confidence = regime?.confidence || 0.87;
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    if (!searchQuery || searchQuery.length < 2) { setSearchResults([]); return; }
+    setSearching(true);
+    const t = setTimeout(() => {
+      fetchDistrictSearch(searchQuery).then(d => { setSearchResults(d.results || []); setSearching(false); }).catch(() => setSearching(false));
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const handler = (e) => { if (searchRef.current && !searchRef.current.contains(e.target)) setSearchOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const leadTimes = ['24', '48', '72', '96', '120'];
+  const dates = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(2026, 8, 10 + i);
+    return d.toISOString().split('T')[0];
+  });
 
   return (
-    <header className="brand-gradient brand-glow relative overflow-hidden">
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-      }} />
-
-      <div className="relative max-w-[1800px] mx-auto px-6 py-5">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-
-          <div className="flex items-center gap-4">
-            <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-white/[0.08] backdrop-blur-sm border border-white/[0.06]">
-              <Cloud className="w-5 h-5 text-sky-400" />
-            </div>
-            <div>
-              <h1 className="text-[17px] font-bold text-white tracking-[-0.02em]">
-                Monsoon Post-Processing System
-              </h1>
-              <p className="text-[12px] text-sky-300/60 font-medium tracking-wide uppercase mt-0.5">
-                Regime-Aware AI Rainfall Forecasting
-              </p>
-            </div>
+    <header className={`${isDark ? 'bg-[#0f172a]/80 border-white/5' : 'bg-white/90 border-gray-200'} backdrop-blur-xl border-b h-[72px] transition-colors`}>
+      <div className="max-w-[1800px] mx-auto px-6 h-full flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+            <span className="text-white font-bold text-[18px]">R</span>
           </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2.5 bg-white/[0.06] backdrop-blur-sm rounded-xl px-4 py-2.5 border border-white/[0.05]">
-              <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: regimeInfo.color }} />
-              <span className="text-[15px]">{regimeInfo.icon}</span>
-              <div className="ml-1">
-                <div className="text-[11px] text-sky-300/50 font-medium uppercase tracking-wider">Active Regime</div>
-                <div className="text-[13px] font-semibold text-white/90">{regimeLabel}</div>
-              </div>
-              <div className="ml-2 px-2 py-0.5 rounded-md bg-white/[0.08] text-[11px] font-mono font-semibold text-sky-300">
-                {(confidence * 100).toFixed(0)}%
-              </div>
-            </div>
+          <div>
+            <h1 className={`text-[17px] font-bold tracking-[-0.02em] ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Regime-Aware Rainfall Forecast
+            </h1>
+            <p className={`text-[12px] font-medium ${isDark ? 'text-cyan-400/60' : 'text-cyan-600/80'}`}>
+              AI Powered | Better Forecasts, Safer Tomorrow.
+            </p>
           </div>
+        </div>
 
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center gap-2 bg-white/[0.06] backdrop-blur-sm rounded-xl px-3 py-2.5 border border-white/[0.05]">
-              <Calendar className="w-3.5 h-3.5 text-sky-300/60" />
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="bg-transparent text-white/90 text-[13px] font-medium border-none outline-none cursor-pointer w-[120px] [color-scheme:dark]"
-              />
+        <div className="flex items-center gap-3">
+          {/* Date Picker */}
+          <select
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className={`px-3 py-2 rounded-lg text-[13px] font-medium outline-none cursor-pointer ${
+              isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'
+            } border`}
+          >
+            {dates.map(d => <option key={d} value={d}>{new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</option>)}
+          </select>
+
+          {/* Lead Time */}
+          <select
+            value={leadTime}
+            onChange={(e) => setLeadTime(e.target.value)}
+            className={`px-3 py-2 rounded-lg text-[13px] font-medium outline-none cursor-pointer ${
+              isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'
+            } border`}
+          >
+            {leadTimes.map(l => <option key={l} value={l}>Lead: {l}h</option>)}
+          </select>
+
+          {/* Regime Badge */}
+          {regime && (
+            <div className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold ${
+              isDark ? 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/20' : 'bg-cyan-50 text-cyan-700 border border-cyan-200'
+            }`}>
+              {regime.type?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              <span className="ml-1 opacity-60">({(regime.confidence * 100).toFixed(0)}%)</span>
             </div>
+          )}
 
-            <div className="relative">
-              <select
-                value={leadTime}
-                onChange={(e) => setLeadTime(e.target.value)}
-                className="appearance-none bg-white/[0.06] backdrop-blur-sm text-white/90 rounded-xl px-3.5 py-2.5 pr-8 text-[13px] font-semibold cursor-pointer border border-white/[0.05] outline-none [color-scheme:dark]"
-              >
-                <option value="24" className="text-gray-900">T+24h</option>
-                <option value="48" className="text-gray-900">T+48h</option>
-                <option value="72" className="text-gray-900">T+72h</option>
-                <option value="96" className="text-gray-900">T+96h</option>
-                <option value="120" className="text-gray-900">T+120h</option>
-              </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40 pointer-events-none" />
-            </div>
-
+          {/* District Search */}
+          <div className="relative" ref={searchRef}>
             <button
-              onClick={onRefresh}
-              disabled={loading}
-              className="p-2.5 bg-white/[0.06] backdrop-blur-sm rounded-xl hover:bg-white/[0.1] transition-colors border border-white/[0.05] group"
+              onClick={() => setSearchOpen(!searchOpen)}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                isDark ? 'bg-white/5 border-white/10 hover:bg-white/10 text-slate-400' : 'bg-gray-100 border-gray-200 hover:bg-gray-200 text-gray-600'
+              } border`}
             >
-              <RefreshCw className={`w-4 h-4 text-white/60 group-hover:text-white/90 transition-colors ${loading ? 'animate-spin' : ''}`} />
+              <Search className="w-5 h-5" />
             </button>
-
-            <div className="hidden lg:flex items-center gap-2 bg-emerald-500/[0.12] rounded-xl px-3.5 py-2.5 border border-emerald-400/[0.15]">
-              <Activity className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-[12px] font-semibold text-emerald-300 tracking-wide">LIVE</span>
-            </div>
+            {searchOpen && (
+              <div className={`absolute right-0 top-12 w-[320px] rounded-xl shadow-2xl border z-50 overflow-hidden ${
+                isDark ? 'bg-[#1e293b] border-white/10' : 'bg-white border-gray-200'
+              }`}>
+                <div className="p-3">
+                  <input
+                    type="text"
+                    placeholder="Search 800+ districts..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    autoFocus
+                    className={`w-full px-3 py-2 rounded-lg text-[13px] outline-none ${
+                      isDark ? 'bg-white/5 border-white/10 text-white placeholder-slate-500' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
+                    } border`}
+                  />
+                </div>
+                <div className="max-h-[300px] overflow-y-auto">
+                  {searching && <div className="px-4 py-3 text-[12px] text-slate-400">Searching...</div>}
+                  {searchResults.length === 0 && !searching && searchQuery.length >= 2 && (
+                    <div className="px-4 py-3 text-[12px] text-slate-500">No districts found</div>
+                  )}
+                  {searchResults.map(d => (
+                    <div
+                      key={d.id}
+                      onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                      className={`px-4 py-2.5 cursor-pointer flex items-center gap-3 ${
+                        isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      <MapPin className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+                      <div>
+                        <div className={`text-[13px] font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{d.name}</div>
+                        <div className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{d.state}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Theme Toggle */}
+          <button onClick={toggleTheme} className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+            isDark ? 'bg-white/5 border-white/10 hover:bg-white/10 text-yellow-400' : 'bg-gray-100 border-gray-200 hover:bg-gray-200 text-gray-700'
+          } border`}>
+            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+
+          {/* Refresh */}
+          <button
+            onClick={onRefresh}
+            disabled={loading}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+              isDark ? 'bg-white/5 border-white/10 hover:bg-white/10 text-slate-400' : 'bg-gray-100 border-gray-200 hover:bg-gray-200 text-gray-600'
+            } border ${loading ? 'animate-spin' : ''}`}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+          </button>
         </div>
       </div>
     </header>

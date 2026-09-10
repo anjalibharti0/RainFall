@@ -1,6 +1,10 @@
 import { REGIMES } from '../../data/mockData';
+import { useTheme } from '../../context/ThemeContext';
 
-export default function RegimePieChart({ districts }) {
+export default function RegimePieChart({ districts = [] }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const regimeCounts = {};
   districts.forEach(d => {
     const r = d.regime || 'active_monsoon';
@@ -8,71 +12,56 @@ export default function RegimePieChart({ districts }) {
   });
 
   const total = districts.length || 1;
-  let startAngle = 0;
   const segments = Object.entries(regimeCounts).map(([regime, count]) => {
-    const regimeInfo = REGIMES[regime] || { label: regime, color: '#94a3b8' };
-    const pct = (count / total) * 100;
-    const segment = {
-      regime,
-      label: regimeInfo.label,
-      color: regimeInfo.color,
-      count,
-      pct: pct.toFixed(0),
-    };
-    startAngle += pct;
-    return segment;
+    const info = REGIMES[regime] || { label: regime, color: '#94a3b8' };
+    return { regime, label: info.label, color: info.color, count, pct: (count / total * 100).toFixed(0) };
   });
 
-  const size = 180;
+  const size = 160;
   const cx = size / 2;
   const cy = size / 2;
-  const outerR = 75;
-  const innerR = 50;
-
-  function describeArc(startPct, endPct) {
-    const start = (startPct / 100) * 2 * Math.PI - Math.PI / 2;
-    const end = (endPct / 100) * 2 * Math.PI - Math.PI / 2;
-    const largeArc = endPct - startPct > 50 ? 1 : 0;
-    const x1o = cx + outerR * Math.cos(start);
-    const y1o = cy + outerR * Math.sin(start);
-    const x2o = cx + outerR * Math.cos(end);
-    const y2o = cy + outerR * Math.sin(end);
-    const x1i = cx + innerR * Math.cos(end);
-    const y1i = cy + innerR * Math.sin(end);
-    const x2i = cx + innerR * Math.cos(start);
-    const y2i = cy + innerR * Math.sin(start);
-    return `M ${x1o} ${y1o} A ${outerR} ${outerR} 0 ${largeArc} 1 ${x2o} ${y2o} L ${x1i} ${y1i} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x2i} ${y2i} Z`;
-  }
+  const outerR = 65;
+  const innerR = 42;
 
   let cumulative = 0;
   const paths = segments.map(seg => {
     const start = cumulative;
     cumulative += parseFloat(seg.pct);
-    return { ...seg, path: describeArc(start, cumulative) };
+    const startAngle = (start / 100) * 2 * Math.PI - Math.PI / 2;
+    const endAngle = (cumulative / 100) * 2 * Math.PI - Math.PI / 2;
+    const largeArc = parseFloat(seg.pct) > 50 ? 1 : 0;
+    const x1o = cx + outerR * Math.cos(startAngle);
+    const y1o = cy + outerR * Math.sin(startAngle);
+    const x2o = cx + outerR * Math.cos(endAngle);
+    const y2o = cy + outerR * Math.sin(endAngle);
+    const x1i = cx + innerR * Math.cos(endAngle);
+    const y1i = cy + innerR * Math.sin(endAngle);
+    const x2i = cx + innerR * Math.cos(startAngle);
+    const y2i = cy + innerR * Math.sin(startAngle);
+    const path = `M ${x1o} ${y1o} A ${outerR} ${outerR} 0 ${largeArc} 1 ${x2o} ${y2o} L ${x1i} ${y1i} A ${innerR} ${innerR} 0 ${largeArc} 0 ${x2i} ${y2i} Z`;
+    return { ...seg, path };
   });
 
   return (
-    <div className="dashboard-card p-0 overflow-hidden">
-      <div className="px-5 py-3.5 border-b border-gray-100">
-        <h3 className="text-[15px] font-bold text-gray-900 tracking-[-0.01em]">Regime Distribution</h3>
-        <p className="text-[11px] text-gray-400 mt-0.5">By district count</p>
-      </div>
-      <div className="p-4 flex flex-col items-center">
+    <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/30' : 'bg-white border-gray-200'} rounded-2xl border p-5`}>
+      <h3 className={`text-[14px] font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-1`}>Regime Distribution</h3>
+      <p className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-gray-400'} mb-4`}>By district count</p>
+      <div className="flex flex-col items-center">
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {paths.map(seg => (
             <path key={seg.regime} d={seg.path} fill={seg.color} opacity={0.85} />
           ))}
-          <text x={cx} y={cy - 5} textAnchor="middle" className="text-[18px] font-extrabold" fill="#0f172a">{total}</text>
-          <text x={cx} y={cy + 12} textAnchor="middle" className="text-[10px]" fill="#94a3b8">Districts</text>
+          <text x={cx} y={cy - 4} textAnchor="middle" className="text-[16px] font-extrabold" fill={isDark ? 'white' : '#111827'}>{total}</text>
+          <text x={cx} y={cy + 10} textAnchor="middle" className="text-[9px]" fill={isDark ? '#64748b' : '#9ca3af'}>Districts</text>
         </svg>
         <div className="mt-3 space-y-1.5 w-full">
           {segments.map(seg => (
-            <div key={seg.regime} className="flex items-center justify-between text-[12px]">
+            <div key={seg.regime} className="flex items-center justify-between text-[11px]">
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: seg.color }} />
-                <span className="text-gray-600">{seg.label}</span>
+                <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: seg.color }} />
+                <span className={isDark ? 'text-slate-300' : 'text-gray-600'}>{seg.label}</span>
               </div>
-              <span className="font-semibold text-gray-800">{seg.count} <span className="text-gray-400 font-normal">({seg.pct}%)</span></span>
+              <span className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{seg.count} <span className={`${isDark ? 'text-slate-500' : 'text-gray-400'} font-normal`}>({seg.pct}%)</span></span>
             </div>
           ))}
         </div>

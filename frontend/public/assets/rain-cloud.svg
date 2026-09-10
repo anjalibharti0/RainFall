@@ -1,21 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 180" fill="none">
-  <!-- Cloud body -->
-  <ellipse cx="100" cy="70" rx="65" ry="45" fill="#9CB8D0"/>
-  <ellipse cx="60" cy="80" rx="45" ry="35" fill="#8EAFC5"/>
-  <ellipse cx="140" cy="80" rx="45" ry="35" fill="#8EAFC5"/>
-  <ellipse cx="100" cy="85" rx="70" ry="30" fill="#A8C4D8"/>
+  <!-- Main cloud body -->
+  <ellipse cx="100" cy="70" rx="70" ry="45" fill="#8BAFC4"/>
+  <ellipse cx="60" cy="75" rx="45" ry="35" fill="#8BAFC4"/>
+  <ellipse cx="140" cy="75" rx="45" ry="35" fill="#8BAFC4"/>
+  <ellipse cx="100" cy="55" rx="55" ry="35" fill="#A3C4D4"/>
+  <ellipse cx="70" cy="60" rx="35" ry="25" fill="#A3C4D4"/>
+  <ellipse cx="130" cy="60" rx="35" ry="25" fill="#A3C4D4"/>
   <!-- Cloud highlights -->
-  <ellipse cx="85" cy="55" rx="30" ry="18" fill="#B8D4E6" opacity="0.6"/>
-  <ellipse cx="115" cy="60" rx="22" ry="14" fill="#C8E0F0" opacity="0.4"/>
+  <ellipse cx="90" cy="50" rx="30" ry="18" fill="#B8D4E3" opacity="0.7"/>
+  <ellipse cx="115" cy="55" rx="20" ry="12" fill="#B8D4E3" opacity="0.5"/>
+  <!-- Cloud shadow/bottom -->
+  <ellipse cx="100" cy="85" rx="65" ry="20" fill="#6B9AB0"/>
   <!-- Rain drops -->
-  <g fill="#7EB8D8" stroke="#5A9ABF" stroke-width="0.5">
-    <path d="M55 120 Q55 130 50 140 Q55 138 60 140 Q55 130 55 120Z"/>
-    <path d="M75 115 Q75 128 70 140 Q75 137 80 140 Q75 128 75 115Z"/>
-    <path d="M95 125 Q95 138 90 150 Q95 147 100 150 Q95 138 95 125Z"/>
-    <path d="M115 118 Q115 130 110 142 Q115 139 120 142 Q115 130 115 118Z"/>
-    <path d="M135 122 Q135 134 130 146 Q135 143 140 146 Q135 134 135 122Z"/>
-    <path d="M65 145 Q65 155 60 165 Q65 162 70 165 Q65 155 65 145Z"/>
-    <path d="M105 150 Q105 160 100 170 Q105 167 110 170 Q105 160 105 150Z"/>
-    <path d="M145 148 Q145 158 140 168 Q145 165 150 168 Q145 158 145 148Z"/>
-  </g>
+  <path d="M55 110 Q57 120 55 130" stroke="#7AAFC4" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M75 115 Q77 128 75 140" stroke="#7AAFC4" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M95 108 Q97 122 95 135" stroke="#7AAFC4" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M115 112 Q117 126 115 140" stroke="#7AAFC4" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M135 110 Q137 124 135 138" stroke="#7AAFC4" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M65 125 Q67 135 65 145" stroke="#7AAFC4" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M85 128 Q87 140 85 152" stroke="#7AAFC4" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M105 122 Q107 134 105 146" stroke="#7AAFC4" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M125 126 Q127 138 125 150" stroke="#7AAFC4" stroke-width="2.5" stroke-linecap="round" fill="none"/>
 </svg>

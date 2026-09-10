@@ -1,97 +1,76 @@
 import { useState } from 'react';
+import { Search } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
-export default function DistrictTable({ districts, onDistrictClick }) {
-  const [sortKey, setSortKey] = useState('corrected');
-  const [sortDir, setSortDir] = useState('desc');
+export default function DistrictTable({ districts = [], onDistrictClick }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [search, setSearch] = useState('');
 
-  const handleSort = (key) => {
-    if (sortKey === key) {
-      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
-      setSortDir('desc');
-    }
+  const filtered = districts
+    .filter(d => !search || d.name?.toLowerCase().includes(search.toLowerCase()) || d.state?.toLowerCase().includes(search.toLowerCase()))
+    .slice(0, 20);
+
+  const regimeColors = {
+    active_monsoon: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', dot: 'bg-emerald-400' },
+    break_monsoon: { bg: 'bg-amber-500/15', text: 'text-amber-400', dot: 'bg-amber-400' },
+    depression: { bg: 'bg-red-500/15', text: 'text-red-400', dot: 'bg-red-400' },
+    orographic: { bg: 'bg-purple-500/15', text: 'text-purple-400', dot: 'bg-purple-400' },
+    coastal: { bg: 'bg-cyan-500/15', text: 'text-cyan-400', dot: 'bg-cyan-400' },
+    western_disturbance: { bg: 'bg-indigo-500/15', text: 'text-indigo-400', dot: 'bg-indigo-400' },
   };
 
-  const sorted = [...districts]
-    .filter(d => !search || d.name.toLowerCase().includes(search.toLowerCase()) || d.state.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => {
-      const va = a[sortKey] || 0;
-      const vb = b[sortKey] || 0;
-      return sortDir === 'asc' ? va - vb : vb - va;
-    });
-
-  const SortHeader = ({ label, field }) => (
-    <th
-      className="cursor-pointer hover:text-gray-700 select-none"
-      onClick={() => handleSort(field)}
-    >
-      <span className="flex items-center gap-1">
-        {label}
-        {sortKey === field && <span className="text-gray-300">{sortDir === 'asc' ? '↑' : '↓'}</span>}
-      </span>
-    </th>
-  );
-
   return (
-    <div className="dashboard-card p-0 overflow-hidden">
-      <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
-        <div>
-          <h3 className="text-[15px] font-bold text-gray-900 tracking-[-0.01em]">District Forecasts</h3>
-          <p className="text-[11px] text-gray-400 mt-0.5">{sorted.length} districts · Click row for details</p>
+    <div className="glass-card overflow-hidden h-full flex flex-col">
+      <div className={`px-5 py-4 border-b flex items-center justify-between ${isDark ? 'border-white/5' : 'border-gray-100'}`}>
+        <h3 className={`text-[15px] font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>District Forecast ({districts.length})</h3>
+        <div className="relative">
+          <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
+          <input
+            type="text"
+            placeholder="Search district..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className={`pl-9 pr-3 py-2 rounded-lg text-[12px] w-[180px] outline-none border ${
+              isDark ? 'bg-white/5 border-white/10 focus:border-cyan-500/50 text-white placeholder-slate-500' : 'bg-gray-50 border-gray-200 focus:border-cyan-500 text-gray-900 placeholder-gray-400'
+            }`}
+          />
         </div>
-        <input
-          type="text"
-          placeholder="Search district or state..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="input-field w-[200px] text-[12px]"
-        />
       </div>
-      <div className="overflow-auto max-h-[400px]">
-        <table className="data-table w-full">
-          <thead className="sticky top-0 bg-white">
-            <tr>
-              <SortHeader label="District" field="name" />
-              <SortHeader label="State" field="state" />
-              <SortHeader label="Raw (mm)" field="raw" />
-              <SortHeader label="Corrected (mm)" field="corrected" />
-              <SortHeader label="Regime" field="regime" />
-              <SortHeader label="P(Heavy)" field="p_heavy" />
-              <SortHeader label="P(Very Heavy)" field="p_very_heavy" />
+      <div className="overflow-auto flex-1">
+        <table className="w-full">
+          <thead className={`sticky top-0 ${isDark ? 'bg-[#0f172a]' : 'bg-white'}`}>
+            <tr className={`border-b ${isDark ? 'border-white/5' : 'border-gray-100'}`}>
+              <th className={`text-left text-[11px] font-semibold uppercase tracking-wider px-5 py-3 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>District</th>
+              <th className={`text-right text-[11px] font-semibold uppercase tracking-wider px-5 py-3 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Raw (mm)</th>
+              <th className={`text-right text-[11px] font-semibold uppercase tracking-wider px-5 py-3 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>AI Corrected (mm)</th>
+              <th className={`text-right text-[11px] font-semibold uppercase tracking-wider px-5 py-3 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>P(Heavy)</th>
+              <th className={`text-center text-[11px] font-semibold uppercase tracking-wider px-5 py-3 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Regime</th>
             </tr>
           </thead>
           <tbody>
-            {sorted.map((d) => (
-              <tr
-                key={d.district_id}
-                className="cursor-pointer hover:bg-sky-50/50"
-                onClick={() => onDistrictClick?.(d)}
-              >
-                <td className="font-semibold text-gray-900">{d.name}</td>
-                <td className="text-gray-500">{d.state}</td>
-                <td className="font-medium text-gray-600">{d.raw}</td>
-                <td>
-                  <span className={`font-bold ${d.corrected > 64.5 ? 'text-red-600' : d.corrected > 35 ? 'text-amber-600' : 'text-sky-600'}`}>
-                    {d.corrected}
-                  </span>
-                </td>
-                <td>
-                  <span className="capitalize text-[12px] text-gray-500">{(d.regime || '').replace('_', ' ')}</span>
-                </td>
-                <td>
-                  <span className={`font-semibold ${(d.p_heavy || 0) > 0.5 ? 'text-amber-600' : 'text-gray-600'}`}>
-                    {((d.p_heavy || 0) * 100).toFixed(0)}%
-                  </span>
-                </td>
-                <td>
-                  <span className={`font-semibold ${(d.p_very_heavy || 0) > 0.3 ? 'text-red-500' : 'text-gray-600'}`}>
-                    {((d.p_very_heavy || 0) * 100).toFixed(0)}%
-                  </span>
-                </td>
-              </tr>
-            ))}
+            {filtered.map((d, i) => {
+              const rc = regimeColors[d.regime] || regimeColors.active_monsoon;
+              const pHeavy = d.p_heavy || d.pHeavy || 0;
+              return (
+                <tr
+                  key={d.district_id || d.id || i}
+                  className={`border-b cursor-pointer transition-colors ${isDark ? 'border-white/5 hover:bg-white/[0.02]' : 'border-gray-50 hover:bg-cyan-50/50'}`}
+                  onClick={() => onDistrictClick?.(d)}
+                >
+                  <td className={`px-5 py-3 text-[13px] font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{d.name}</td>
+                  <td className={`px-5 py-3 text-[13px] text-right ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{d.raw}</td>
+                  <td className={`px-5 py-3 text-[13px] font-semibold text-right ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`}>{d.corrected}</td>
+                  <td className={`px-5 py-3 text-[13px] font-semibold text-right ${isDark ? 'text-white' : 'text-gray-900'}`}>{(pHeavy * 100).toFixed(0)}%</td>
+                  <td className="px-5 py-3 text-center">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${rc.bg} ${rc.text}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${rc.dot}`} />
+                      {d.regime?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
