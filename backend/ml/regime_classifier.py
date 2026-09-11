@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 
 REGIMES = ["active_monsoon", "break_monsoon", "depression", "orographic", "coastal", "western_disturbance"]
-FEATURE_NAMES = ["wind_shear", "olr", "cape", "vorticity", "moisture_flux", "humidity_700"]
+FEATURE_NAMES = ["wind_shear", "olr", "cape", "vorticity", "moisture_flux", "humidity_700", "pressure", "sst"]
 MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "trained_models", "regime_classifier.pkl")
 
 
@@ -18,6 +18,8 @@ class RegimeClassifier:
     def train(self, df):
         X = df[FEATURE_NAMES].values
         y = df["regime"].values
+        X = np.array(X, dtype=np.float64)
+        y = np.array(y)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
         self.model = RandomForestClassifier(
             n_estimators=200,

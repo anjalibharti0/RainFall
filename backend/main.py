@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from ml.regime_classifier import RegimeClassifier
 from ml.bias_corrector import BiasCorrector
 from ml.probability_estimator import ProbabilityEstimator
-from ml.synthetic_data import generate_training_data, generate_synthetic_forecast, generate_real_forecast, compute_verification_metrics, DISTRICTS
+from ml.synthetic_data import generate_training_data, generate_synthetic_forecast, compute_verification_metrics
 import numpy as np
 
 app = FastAPI(title="Regime-Aware Rainfall Post-Processing API", version="1.0.0")
@@ -26,7 +26,7 @@ def _ensure_models_trained():
             prob_est.load()
         if not regime_clf.is_trained:
             print("Training ML models on synthetic data...")
-            df = generate_training_data(n_samples=6000, seed=42)
+            df = generate_training_data(n_samples=10000, seed=42)
             regime_clf.train(df)
             regime_clf.save()
             bias_corr.train(df)
@@ -54,7 +54,7 @@ def health():
 
 @app.get("/api/v1/forecast/process")
 def process_forecast(date: str = "2026-09-10", lead_time: int = 24, model_source: str = "GFS"):
-    forecast = generate_real_forecast(forecast_date=date, lead_time=lead_time)
+    forecast = generate_synthetic_forecast(forecast_date=date, lead_time=lead_time)
     regime = forecast["regime"]
     corrected_districts = []
     for d in forecast["districts"]:
@@ -68,13 +68,13 @@ def process_forecast(date: str = "2026-09-10", lead_time: int = 24, model_source
 
 @app.get("/api/v1/regime/classify/{date}")
 def classify_regime(date: str, lead_time: int = 24):
-    forecast = generate_real_forecast(forecast_date=date, lead_time=lead_time)
+    forecast = generate_synthetic_forecast(forecast_date=date, lead_time=lead_time)
     return {"date": date, "regime": forecast["regime"]}
 
 
 @app.get("/api/v1/forecast/district/{district_id}")
 def get_district_forecast(district_id: int, date: str = "2026-09-09", lead_time: int = 24):
-    forecast = generate_real_forecast(forecast_date=date, lead_time=lead_time)
+    forecast = generate_synthetic_forecast(forecast_date=date, lead_time=lead_time)
     regime = forecast["regime"]
     for d in forecast["districts"]:
         if d["district_id"] == district_id:
@@ -88,7 +88,7 @@ def get_district_forecast(district_id: int, date: str = "2026-09-09", lead_time:
 
 @app.get("/api/v1/probability/map/{date}")
 def get_probability_map(date: str, lead_time: int = 24):
-    forecast = generate_real_forecast(forecast_date=date, lead_time=lead_time)
+    forecast = generate_synthetic_forecast(forecast_date=date, lead_time=lead_time)
     regime = forecast["regime"]
     districts = []
     for d in forecast["districts"]:
@@ -127,7 +127,7 @@ def get_verification_report(date: str, lead_time: int = 24):
 
 @app.get("/api/v1/forecast/table/{date}")
 def get_forecast_table(date: str, lead_time: int = 24):
-    forecast = generate_real_forecast(forecast_date=date, lead_time=lead_time)
+    forecast = generate_synthetic_forecast(forecast_date=date, lead_time=lead_time)
     regime = forecast["regime"]
     for d in forecast["districts"]:
         corrected = bias_corr.predict(d["raw"], regime["features"], regime["type"], lead_time)

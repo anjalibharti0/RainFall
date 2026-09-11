@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from './context/ThemeContext';
+import { useNotification } from './hooks/useNotification';
+import { analyzeForecastData, analyzeApiError } from './services/alertEngine';
 import Header from './components/layout/Header';
 import Sidebar from './components/layout/Sidebar';
 import DashboardView from './components/views/DashboardView';
@@ -10,11 +12,15 @@ import DistrictForecastView from './components/views/DistrictForecastView';
 import VerificationView from './components/views/VerificationView';
 import SettingsView from './components/views/SettingsView';
 import DistrictDetailModal from './components/common/DistrictDetailModal';
+import NotificationContainer from './components/common/NotificationContainer';
+import AlertBanner from './components/common/AlertBanner';
 import { fetchForecast, fetchVerificationReport } from './services/api';
+import { requestNotificationPermission } from './services/browserNotification';
 
 export default function App() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const { fire } = useNotification();
   const [selectedDate, setSelectedDate] = useState('2026-09-10');
   const [leadTime, setLeadTime] = useState('24');
   const [activeView, setActiveView] = useState('dashboard');
@@ -22,6 +28,11 @@ export default function App() {
   const [forecastData, setForecastData] = useState(null);
   const [verificationData, setVerificationData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const prevForecastRef = useRef(null);
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
@@ -30,10 +41,19 @@ export default function App() {
         fetchForecast(selectedDate, parseInt(leadTime)).catch(() => null),
         fetchVerificationReport(selectedDate, parseInt(leadTime)).catch(() => null),
       ]);
-      if (forecast) setForecastData(forecast);
+
+      if (forecast) {
+        const alerts = analyzeForecastData(forecast, prevForecastRef.current);
+        alerts.forEach((alert) => fire({ ...alert, sound: true, browser: true }));
+        prevForecastRef.current = forecast;
+        setForecastData(forecast);
+      }
+
       if (verification) setVerificationData(verification);
     } catch (err) {
       console.error('Data fetch error:', err);
+      const errorAlert = analyzeApiError(err);
+      if (errorAlert) fire({ ...errorAlert, sound: true });
     } finally {
       setLoading(false);
     }
@@ -69,6 +89,7 @@ export default function App() {
         onRefresh={loadData}
         loading={loading}
       />
+      <AlertBanner />
       <div className="flex h-[calc(100vh-72px)]">
         <Sidebar activeView={activeView} setActiveView={setActiveView} />
         <main className="flex-1 overflow-y-auto p-5">
@@ -84,6 +105,7 @@ export default function App() {
       {selectedDistrict && (
         <DistrictDetailModal district={selectedDistrict} onClose={() => setSelectedDistrict(null)} />
       )}
+      <NotificationContainer />
     </div>
   );
 }

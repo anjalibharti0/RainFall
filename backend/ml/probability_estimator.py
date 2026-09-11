@@ -4,7 +4,7 @@ import os
 from sklearn.ensemble import GradientBoostingRegressor
 
 THRESHOLDS = [7.5, 64.5, 124.5, 244.5]
-FEATURE_NAMES = ["corrected_rainfall", "wind_shear", "olr", "cape", "vorticity", "moisture_flux", "humidity_700", "lead_time"]
+FEATURE_NAMES = ["corrected_rainfall", "wind_shear", "olr", "cape", "vorticity", "moisture_flux", "humidity_700", "lead_time", "pressure", "sst"]
 MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "trained_models")
 
 
@@ -49,6 +49,8 @@ class ProbabilityEstimator:
             features.get("moisture_flux", 0),
             features.get("humidity_700", 0),
             lead_time,
+            features.get("pressure", 1005),
+            features.get("sst", 28),
         ]])
         for threshold in THRESHOLDS:
             if threshold in self.models:

@@ -1,7 +1,29 @@
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import { useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 
 const indiaCenter = [20.5937, 78.9629];
+const indiaBounds = [[6.5, 68.0], [37.0, 97.5]];
+
+function FitBounds({ districts }) {
+  const map = useMap();
+  useEffect(() => {
+    if (districts.length > 0) {
+      const lats = districts.map(d => d.lat).filter(Boolean);
+      const lons = districts.map(d => d.lon).filter(Boolean);
+      if (lats.length > 0 && lons.length > 0) {
+        const bounds = [
+          [Math.min(...lats) - 1, Math.min(...lons) - 1],
+          [Math.max(...lats) + 1, Math.max(...lons) + 1]
+        ];
+        map.fitBounds(bounds, { padding: [20, 20] });
+      }
+    } else {
+      map.fitBounds(indiaBounds);
+    }
+  }, [districts, map]);
+  return null;
+}
 
 const rainfallColorScale = (value) => {
   if (value < 7.5) return '#1e3a5f';
@@ -31,12 +53,13 @@ export default function RainfallMap({ districts = [], onDistrictClick }) {
           ))}
         </div>
       </div>
-      <div className="flex-1 min-h-0">
-        <MapContainer center={indiaCenter} zoom={5} style={{ height: '100%', width: '100%' }} zoomControl={true}>
+      <div className="flex-1 min-h-[400px]">
+        <MapContainer center={indiaCenter} zoom={5} minZoom={4} maxZoom={10} style={{ height: '100%', width: '100%' }} zoomControl={true} scrollWheelZoom={true} fitBounds={indiaBounds}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          <FitBounds districts={districts} />
           {districts.map((d, i) => {
             const corrected = d.corrected || 0;
             const pHeavy = d.p_heavy || d.pHeavy || 0;
