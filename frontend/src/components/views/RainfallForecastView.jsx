@@ -3,9 +3,13 @@ import TimeSeriesChart from '../charts/TimeSeriesChart';
 
 export default function RainfallForecastView({ districts, setSelectedDistrict }) {
   return (
-    <div className="max-w-[1600px] mx-auto space-y-5">
-      <div className="h-[700px]"><RainfallMap districts={districts} onDistrictClick={setSelectedDistrict} /></div>
-      <TimeSeriesChart districts={districts} />
+    <div className="max-w-[1600px] mx-auto flex flex-col gap-5">
+      <div className="sticky top-0 z-10 h-[60vh] min-h-[400px]">
+        <RainfallMap districts={districts} onDistrictClick={setSelectedDistrict} />
+      </div>
+      <div className="relative z-0">
+        <TimeSeriesChart districts={districts} />
+      </div>
     </div>
   );
 }

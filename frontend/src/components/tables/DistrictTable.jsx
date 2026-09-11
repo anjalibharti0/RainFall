@@ -1,78 +1,109 @@
-import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { Search, X } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+
+const PAGE_SIZE = 40;
 
 export default function DistrictTable({ districts = [], onDistrictClick }) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [search, setSearch] = useState('');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const scrollRef = useRef(null);
 
-  const filtered = districts
-    .filter(d => !search || d.name?.toLowerCase().includes(search.toLowerCase()) || d.state?.toLowerCase().includes(search.toLowerCase()))
-    .slice(0, 20);
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    if (!q) return districts;
+    return districts.filter(d =>
+      d.name?.toLowerCase().includes(q) ||
+      d.state?.toLowerCase().includes(q)
+    );
+  }, [districts, search]);
 
-  const regimeColors = {
-    active_monsoon: { bg: 'bg-emerald-500/15', text: 'text-emerald-400', dot: 'bg-emerald-400' },
-    break_monsoon: { bg: 'bg-amber-500/15', text: 'text-amber-400', dot: 'bg-amber-400' },
-    depression: { bg: 'bg-red-500/15', text: 'text-red-400', dot: 'bg-red-400' },
-    orographic: { bg: 'bg-purple-500/15', text: 'text-purple-400', dot: 'bg-purple-400' },
-    coastal: { bg: 'bg-cyan-500/15', text: 'text-cyan-400', dot: 'bg-cyan-400' },
-    western_disturbance: { bg: 'bg-indigo-500/15', text: 'text-indigo-400', dot: 'bg-indigo-400' },
+  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
+
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [search]);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 60) {
+      setVisibleCount(prev => Math.min(prev + PAGE_SIZE, filtered.length));
+    }
+  }, [filtered.length]);
+
+  const regimeDot = {
+    active_monsoon: 'bg-emerald-400',
+    break_monsoon: 'bg-amber-400',
+    depression: 'bg-red-400',
+    orographic: 'bg-purple-400',
+    coastal: 'bg-cyan-400',
+    western_disturbance: 'bg-indigo-400',
   };
 
   return (
-    <div className="glass-card overflow-hidden h-full flex flex-col">
-      <div className={`px-5 py-4 border-b flex items-center justify-between ${isDark ? 'border-white/5' : 'border-gray-100'}`}>
-        <h3 className={`text-[15px] font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>District Forecast ({districts.length})</h3>
-        <div className="relative">
-          <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
-          <input
-            type="text"
-            placeholder="Search district..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className={`pl-9 pr-3 py-2 rounded-lg text-[12px] w-[180px] outline-none border ${
-              isDark ? 'bg-white/5 border-white/10 focus:border-cyan-500/50 text-white placeholder-slate-500' : 'bg-gray-50 border-gray-200 focus:border-cyan-500 text-gray-900 placeholder-gray-400'
-            }`}
-          />
-        </div>
+    <div className={`glass-card flex flex-col overflow-hidden`}>
+      <div className={`px-2.5 py-1.5 border-b flex items-center gap-1.5 ${isDark ? 'border-white/5' : 'border-gray-100'}`}>
+        <Search className={`w-3 h-3 flex-shrink-0 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} />
+        <input
+          type="text"
+          placeholder={`Search ${districts.length} districts...`}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className={`flex-1 bg-transparent text-[11px] outline-none placeholder:${isDark ? 'text-slate-600' : 'text-gray-300'} ${isDark ? 'text-white' : 'text-gray-900'}`}
+        />
+        {search && (
+          <button onClick={() => setSearch('')} className={`flex-shrink-0 ${isDark ? 'text-slate-500 hover:text-white' : 'text-gray-400 hover:text-gray-700'}`}>
+            <X className="w-3 h-3" />
+          </button>
+        )}
+        <span className={`text-[9px] flex-shrink-0 ${isDark ? 'text-slate-600' : 'text-gray-400'}`}>
+          {search ? `${filtered.length}/${districts.length}` : districts.length}
+        </span>
       </div>
-      <div className="overflow-auto flex-1">
+
+      <div ref={scrollRef} onScroll={handleScroll} className="overflow-auto h-full max-h-[520px]">
         <table className="w-full">
-          <thead className={`sticky top-0 ${isDark ? 'bg-[#0f172a]' : 'bg-white'}`}>
-            <tr className={`border-b ${isDark ? 'border-white/5' : 'border-gray-100'}`}>
-              <th className={`text-left text-[11px] font-semibold uppercase tracking-wider px-5 py-3 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>District</th>
-              <th className={`text-right text-[11px] font-semibold uppercase tracking-wider px-5 py-3 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Raw (mm)</th>
-              <th className={`text-right text-[11px] font-semibold uppercase tracking-wider px-5 py-3 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>AI Corrected (mm)</th>
-              <th className={`text-right text-[11px] font-semibold uppercase tracking-wider px-5 py-3 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>P(Heavy)</th>
-              <th className={`text-center text-[11px] font-semibold uppercase tracking-wider px-5 py-3 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Regime</th>
-            </tr>
-          </thead>
           <tbody>
-            {filtered.map((d, i) => {
-              const rc = regimeColors[d.regime] || regimeColors.active_monsoon;
+            {visible.map((d, i) => {
+              const dot = regimeDot[d.regime] || 'bg-slate-400';
               const pHeavy = d.p_heavy || d.pHeavy || 0;
               return (
                 <tr
                   key={d.district_id || d.id || i}
-                  className={`border-b cursor-pointer transition-colors ${isDark ? 'border-white/5 hover:bg-white/[0.02]' : 'border-gray-50 hover:bg-cyan-50/50'}`}
                   onClick={() => onDistrictClick?.(d)}
+                  className={`border-b cursor-pointer transition-colors flex items-center gap-2 px-2.5 py-1 ${
+                    isDark ? 'border-white/5 hover:bg-white/[0.03]' : 'border-gray-50 hover:bg-cyan-50/50'
+                  }`}
                 >
-                  <td className={`px-5 py-3 text-[13px] font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{d.name}</td>
-                  <td className={`px-5 py-3 text-[13px] text-right ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{d.raw}</td>
-                  <td className={`px-5 py-3 text-[13px] font-semibold text-right ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`}>{d.corrected}</td>
-                  <td className={`px-5 py-3 text-[13px] font-semibold text-right ${isDark ? 'text-white' : 'text-gray-900'}`}>{(pHeavy * 100).toFixed(0)}%</td>
-                  <td className="px-5 py-3 text-center">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${rc.bg} ${rc.text}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${rc.dot}`} />
-                      {d.regime?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                    </span>
-                  </td>
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dot}`} />
+                  <span className={`text-[11px] font-medium truncate min-w-0 flex-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {d.name}
+                  </span>
+                  <span className={`text-[10px] tabular-nums ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                    {d.raw}
+                  </span>
+                  <span className={`text-[10px] font-bold tabular-nums ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`}>
+                    {d.corrected}
+                  </span>
+                  <span className={`text-[10px] font-bold tabular-nums ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {(pHeavy * 100).toFixed(0)}%
+                  </span>
                 </tr>
               );
             })}
           </tbody>
         </table>
+        {visibleCount < filtered.length && (
+          <div className={`px-2 py-1.5 text-center text-[9px] ${isDark ? 'text-slate-600' : 'text-gray-400'}`}>
+            {visible.length}/{filtered.length}
+          </div>
+        )}
+        {filtered.length === 0 && (
+          <div className={`px-2 py-4 text-center text-[10px] ${isDark ? 'text-slate-600' : 'text-gray-400'}`}>
+            No matches
+          </div>
+        )}
       </div>
     </div>
   );

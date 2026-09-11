@@ -22,9 +22,14 @@ const ALERT_ICONS = {
 const ALERT_COLORS = {
   info: 'text-cyan-400',
   warning: 'text-amber-400',
-  critical: 'text-red-400',
-  emergency: 'text-red-400',
+  critical: 'text-red-300',
+  emergency: 'text-red-300',
   error: 'text-slate-400',
+};
+
+const ALERT_ROW_STYLES = {
+  critical: 'bg-red-900/40 border-red-500/20',
+  emergency: 'bg-red-950/60 border-red-500/30',
 };
 
 export default function Header({ selectedDate, setSelectedDate, leadTime, setLeadTime, regime, onRefresh, loading }) {
@@ -67,7 +72,7 @@ export default function Header({ selectedDate, setSelectedDate, leadTime, setLea
   });
 
   return (
-    <header className={`${isDark ? 'bg-[#0f172a]/80 border-white/5' : 'bg-white/90 border-gray-200'} backdrop-blur-xl border-b h-[72px] transition-colors`}>
+    <header className={`relative z-[9997] ${isDark ? 'bg-[#0f172a]/80 border-white/5' : 'bg-white/90 border-gray-200'} backdrop-blur-xl border-b h-[72px] transition-colors`}>
       <div className="max-w-[1800px] mx-auto px-6 h-full flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img src="/src/MeghDrishti.png" alt="MeghDrishti Logo" className="w-16 h-16 rounded-xl object-contain" />
@@ -120,75 +125,86 @@ export default function Header({ selectedDate, setSelectedDate, leadTime, setLea
               onClick={() => { setAlertOpen(!alertOpen); if (!alertOpen && unreadCount > 0) markRead(unreadCount); }}
               className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                 isDark ? 'bg-white/5 border-white/10 hover:bg-white/10 text-slate-400' : 'bg-gray-100 border-gray-200 hover:bg-gray-200 text-gray-600'
-              } border ${unreadCount > 0 ? 'ring-2 ring-red-500/30' : ''}`}
+              } border ${unreadCount > 0 ? 'ring-2 ring-red-500/30' : ''} ${alertOpen ? 'rotate-12' : ''}`}
             >
-              <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'text-red-400' : ''}`} />
+              <Bell className={`w-5 h-5 transition-all ${unreadCount > 0 ? 'text-red-400 animate-pulse' : ''}`} />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold shadow-lg shadow-red-500/30">
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold shadow-lg shadow-red-500/30 animate-bounce">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </button>
+            
+            {/* Backdrop Overlay */}
             {alertOpen && (
-              <div className={`absolute right-0 top-12 w-[380px] rounded-xl shadow-2xl border z-50 overflow-hidden ${
-                isDark ? 'bg-[#1e293b] border-white/10' : 'bg-white border-gray-200'
-              }`}>
-                <div className={`px-4 py-3 border-b flex items-center justify-between ${isDark ? 'border-white/5' : 'border-gray-100'}`}>
-                  <div className="flex items-center gap-2">
-                    <Bell className="w-4 h-4 text-cyan-400" />
-                    <span className={`text-[13px] font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Weather Alerts</span>
-                  </div>
-                  {history.length > 0 && (
-                    <button
-                      onClick={clearAll}
-                      className="flex items-center gap-1 text-[11px] text-red-400 hover:text-red-300 transition-colors"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      Clear
-                    </button>
-                  )}
+              <div 
+                className="fixed inset-0 z-[9996] bg-black/20 backdrop-blur-sm"
+                onClick={() => { setAlertOpen(false); if (unreadCount > 0) markRead(unreadCount); }}
+              />
+            )}
+            
+            {/* Alert Panel */}
+            <div className={`absolute right-0 top-12 w-[380px] rounded-xl shadow-2xl border z-[9998] overflow-hidden transition-all duration-300 ease-out ${
+              alertOpen 
+                ? 'opacity-100 translate-y-0 scale-100' 
+                : 'opacity-0 -translate-y-2 scale-95 pointer-events-none'
+            } ${isDark ? 'bg-[#1e293b] border-white/10' : 'bg-white border-gray-200'}`}>
+              <div className={`px-4 py-3 border-b flex items-center justify-between ${isDark ? 'border-white/5' : 'border-gray-100'}`}>
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-cyan-400" />
+                  <span className={`text-[13px] font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Weather Alerts</span>
                 </div>
-                <div className="max-h-[400px] overflow-y-auto">
-                  {history.length === 0 ? (
-                    <div className="px-4 py-8 text-center">
-                      <CloudRain className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-slate-600' : 'text-gray-300'}`} />
-                      <p className={`text-[12px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>No alerts yet</p>
-                      <p className={`text-[11px] mt-1 ${isDark ? 'text-slate-600' : 'text-gray-300'}`}>Alerts will appear when rainfall thresholds are breached</p>
-                    </div>
-                  ) : (
-                    history.map((alert) => {
-                      const AlertIcon = ALERT_ICONS[alert.type] || Info;
-                      const colorClass = ALERT_COLORS[alert.type] || 'text-slate-400';
-                      return (
-                        <div
-                          key={alert.id}
-                          className={`px-4 py-3 border-b transition-colors ${
-                            isDark ? 'border-white/5 hover:bg-white/[0.02]' : 'border-gray-50 hover:bg-gray-50'
-                          }`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <AlertIcon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${colorClass}`} />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between gap-2">
-                                <p className={`text-[12px] font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                  {alert.title}
-                                </p>
-                                <span className={`text-[10px] flex-shrink-0 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
-                                  {timeAgo(alert.timestamp)}
-                                </span>
-                              </div>
-                              <p className={`text-[11px] mt-0.5 leading-relaxed line-clamp-2 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                                {alert.message}
+                {history.length > 0 && (
+                  <button
+                    onClick={clearAll}
+                    className="flex items-center gap-1 text-[11px] text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="max-h-[400px] overflow-y-auto">
+                {history.length === 0 ? (
+                  <div className="px-4 py-8 text-center">
+                    <CloudRain className={`w-8 h-8 mx-auto mb-2 ${isDark ? 'text-slate-600' : 'text-gray-300'}`} />
+                    <p className={`text-[12px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>No alerts yet</p>
+                    <p className={`text-[11px] mt-1 ${isDark ? 'text-slate-600' : 'text-gray-300'}`}>Alerts will appear when rainfall thresholds are breached</p>
+                  </div>
+                ) : (
+                  history.map((alert) => {
+                    const AlertIcon = ALERT_ICONS[alert.type] || Info;
+                    const colorClass = ALERT_COLORS[alert.type] || 'text-slate-400';
+                    const rowStyle = ALERT_ROW_STYLES[alert.type] || '';
+                    return (
+                      <div
+                        key={alert.id}
+                        className={`px-4 py-3 border-b transition-colors ${
+                          rowStyle || (isDark ? 'border-white/5 hover:bg-white/[0.02]' : 'border-gray-50 hover:bg-gray-50')
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <AlertIcon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${colorClass}`} />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className={`text-[12px] font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                {alert.title}
                               </p>
+                              <span className={`text-[10px] flex-shrink-0 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                                {timeAgo(alert.timestamp)}
+                              </span>
                             </div>
+                            <p className={`text-[11px] mt-0.5 leading-relaxed line-clamp-2 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
+                              {alert.message}
+                            </p>
                           </div>
                         </div>
-                      );
-                    })
-                  )}
-                </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
-            )}
+            </div>
           </div>
 
           {/* District Search */}
@@ -202,7 +218,7 @@ export default function Header({ selectedDate, setSelectedDate, leadTime, setLea
               <Search className="w-5 h-5" />
             </button>
             {searchOpen && (
-              <div className={`absolute right-0 top-12 w-[320px] rounded-xl shadow-2xl border z-50 overflow-hidden ${
+              <div className={`absolute right-0 top-12 w-[320px] rounded-xl shadow-2xl border z-[9998] overflow-hidden ${
                 isDark ? 'bg-[#1e293b] border-white/10' : 'bg-white border-gray-200'
               }`}>
                 <div className="p-3">

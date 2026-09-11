@@ -267,6 +267,12 @@ def generate_synthetic_forecast(forecast_date="2026-09-09", lead_time=24):
         bias = BIAS_FACTORS[regime] + rng.normal(0, 0.08)
         corrected = float(max(0, raw / bias + rng.normal(0, raw * 0.06)))
 
+        # Each district gets its own regime based on local features
+        district_features = _correlated_features(regime, rng)
+        district_features["pressure"] = float(np.clip(district_features["pressure"] + (d["centroid_lat"] - 20) * 0.3, 985, 1020))
+        district_features["sst"] = float(np.clip(district_features["sst"] - abs(d["centroid_lat"] - 15) * 0.08, 24, 33))
+        district_regime = classify_regime(district_features)
+
         thresholds = {}
         for t, key in [(7.5, "p_moderate"), (64.5, "p_heavy"), (124.5, "p_very_heavy"), (244.5, "p_extreme")]:
             if corrected > t * 1.5:
@@ -290,7 +296,7 @@ def generate_synthetic_forecast(forecast_date="2026-09-09", lead_time=24):
             "lon": d["centroid_lon"],
             "raw": round(raw, 1),
             "corrected": round(corrected, 1),
-            "regime": regime,
+            "regime": district_regime,
             **thresholds,
         })
 
