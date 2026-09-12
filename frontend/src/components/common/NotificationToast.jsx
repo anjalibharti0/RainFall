@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { X, CloudRain, AlertTriangle, AlertOctagon, Info, Siren } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -61,6 +61,7 @@ function timeAgo(ts) {
 export default function NotificationToast({ notification, onDismiss, isDark }) {
   const [progress, setProgress] = useState(100);
   const [exiting, setExiting] = useState(false);
+  const dismissedRef = useRef(false);
   const style = SEVERITY_STYLES[notification.type] || SEVERITY_STYLES.info;
   const Icon = style.icon;
   const autoDismiss = notification.type === 'emergency' || notification.type === 'critical'
@@ -68,6 +69,8 @@ export default function NotificationToast({ notification, onDismiss, isDark }) {
     : notification.type === 'warning' ? 8000 : 5000;
 
   const handleDismiss = useCallback(() => {
+    if (dismissedRef.current) return;
+    dismissedRef.current = true;
     setExiting(true);
     setTimeout(() => onDismiss(notification.id), 300);
   }, [onDismiss, notification.id]);
@@ -115,7 +118,7 @@ export default function NotificationToast({ notification, onDismiss, isDark }) {
             </p>
             <button
               onClick={(e) => { e.stopPropagation(); handleDismiss(); }}
-              className={`flex-shrink-0 w-5 h-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${closeBtn}`}
+              className={`flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center transition-all ${closeBtn}`}
             >
               <X className="w-3.5 h-3.5" />
             </button>

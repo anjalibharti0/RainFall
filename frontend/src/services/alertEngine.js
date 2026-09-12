@@ -1,7 +1,7 @@
 import { THRESHOLDS } from '../data/mockData';
 
 const ALERT_COOLDOWN = 5 * 60 * 1000;
-const recentAlerts = new Map();
+let recentAlerts = new Map();
 
 function makeAlertKey(type, district) {
   return `${type}:${district || 'global'}`;
@@ -12,6 +12,10 @@ function isCooldown(key) {
   if (last && Date.now() - last < ALERT_COOLDOWN) return true;
   recentAlerts.set(key, Date.now());
   return false;
+}
+
+export function resetAlertCooldown() {
+  recentAlerts = new Map();
 }
 
 export function analyzeForecastData(forecastData, previousData) {
