@@ -13,13 +13,13 @@ export const fetchVerificationReport = async (date, leadTime = 24) => {
   return data;
 };
 
-export const fetchDistricts = async () => {
-  const { data } = await api.get('/forecast/table/' + '2026-09-10', { params: { lead_time: 24 } });
+export const fetchDistricts = async (date = '2026-09-10') => {
+  const { data } = await api.get('/forecast/table/' + date, { params: { lead_time: 24 } });
   return data;
 };
 
-export const fetchDistrictSearch = async (query) => {
-  const { data } = await api.get('/forecast/table/' + '2026-09-10', { params: { lead_time: 24 } });
+export const fetchDistrictSearch = async (query, date = '2026-09-10') => {
+  const { data } = await api.get('/forecast/table/' + date, { params: { lead_time: 24 } });
   const districts = data.districts || [];
   const ql = query.toLowerCase();
   return {

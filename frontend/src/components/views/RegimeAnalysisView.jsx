@@ -10,8 +10,10 @@ export default function RegimeAnalysisView({ regime, districts }) {
 
   return (
     <div className="max-w-[1600px] mx-auto space-y-5">
-      <RegimePanel regime={regime} />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="animate-fade-slide-up delay-1">
+        <RegimePanel regime={regime} />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-fade-slide-up delay-2">
         <RegimePieChart districts={districts} />
         <div className={`${isDark ? 'bg-slate-800/50 border-slate-700/30' : 'bg-white border-gray-200'} rounded-2xl border p-5`}>
           <h3 className={`text-[14px] font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Regime Features</h3>

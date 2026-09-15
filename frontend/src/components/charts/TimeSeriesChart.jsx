@@ -18,12 +18,16 @@ const generateTimeSeries = () => {
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-800 rounded-xl shadow-xl border border-slate-700 p-3">
-        <p className="text-[12px] font-bold text-white mb-1">{label}</p>
+      <div className="bg-[#1e293b]/95 backdrop-blur-md rounded-xl shadow-2xl border border-white/10 p-3 min-w-[160px]">
+        <p className="text-[12px] font-bold text-white mb-1.5 pb-1.5 border-b border-white/10">{label}</p>
         {payload.map(p => (
-          <p key={p.name} className="text-[11px]" style={{ color: p.color }}>
-            {p.name}: <span className="font-semibold">{p.value} mm</span>
-          </p>
+          <div key={p.name} className="flex items-center justify-between gap-4 py-0.5">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
+              <span className="text-[11px] text-slate-300">{p.name}</span>
+            </div>
+            <span className="text-[11px] font-semibold text-white">{p.value} mm</span>
+          </div>
         ))}
       </div>
     );

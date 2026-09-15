@@ -29,6 +29,7 @@ export default function App() {
   const [verificationData, setVerificationData] = useState(null);
   const [loading, setLoading] = useState(true);
   const prevForecastRef = useRef(null);
+  const dataSource = forecastData?.data_source === 'synthetic' ? 'synthetic' : (forecastData ? 'live' : null);
 
   useEffect(() => {
     requestNotificationPermission();
@@ -67,10 +68,14 @@ export default function App() {
   if (loading && !forecastData) {
     return (
       <div className={`min-h-screen flex items-center justify-center transition-colors ${isDark ? 'bg-[#0a0e1a]' : 'bg-gray-50'}`}>
-        <div className="text-center">
-          <div className={`w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4 ${isDark ? 'border-cyan-400' : 'border-cyan-600'}`} />
-          <p className={`text-[14px] font-semibold ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>Connecting to ML Backend...</p>
-          <p className={`text-[12px] mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Loading forecast data</p>
+        <div className="text-center animate-fade-in">
+          <div className="relative w-16 h-16 mx-auto mb-6">
+            <div className={`absolute inset-0 rounded-full border-4 border-t-transparent animate-spin ${isDark ? 'border-cyan-400' : 'border-cyan-600'}`} />
+            <div className={`absolute inset-2 rounded-full border-4 border-b-transparent animate-spin ${isDark ? 'border-blue-400' : 'border-blue-500'}`} style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+          </div>
+          <p className={`text-[15px] font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>MeghDrishti</p>
+          <p className={`text-[13px] mt-1 ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Connecting to ML Backend...</p>
+          <p className={`text-[11px] mt-2 ${isDark ? 'text-slate-600' : 'text-gray-400'}`}>Loading forecast data</p>
         </div>
       </div>
     );
@@ -88,6 +93,7 @@ export default function App() {
         regime={regime}
         onRefresh={loadData}
         loading={loading}
+        dataSource={dataSource}
       />
       <AlertBanner />
       <div className="flex h-[calc(100vh-72px)]">

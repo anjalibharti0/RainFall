@@ -1,10 +1,12 @@
+import { CloudLightning, Sun, Tornado, Mountain, Waves, Wind } from 'lucide-react';
+
 export const REGIMES = {
-  active_monsoon: { label: 'Active Monsoon', color: '#22c55e', icon: '⛈', severity: 'high' },
-  break_monsoon: { label: 'Break Monsoon', color: '#f59e0b', icon: '☀', severity: 'low' },
-  depression: { label: 'Depression', color: '#ef4444', icon: '🌀', severity: 'extreme' },
-  orographic: { label: 'Orographic', color: '#a855f7', icon: '⛰', severity: 'moderate' },
-  coastal: { label: 'Coastal', color: '#06b6d4', icon: '🌊', severity: 'moderate' },
-  western_disturbance: { label: 'Western Disturbance', color: '#6366f1', icon: '🌬', severity: 'moderate' },
+  active_monsoon: { label: 'Active Monsoon', color: '#22c55e', icon: 'CloudLightning', severity: 'high', IconComponent: CloudLightning },
+  break_monsoon: { label: 'Break Monsoon', color: '#f59e0b', icon: 'Sun', severity: 'low', IconComponent: Sun },
+  depression: { label: 'Depression', color: '#ef4444', icon: 'Tornado', severity: 'extreme', IconComponent: Tornado },
+  orographic: { label: 'Orographic', color: '#a855f7', icon: 'Mountain', severity: 'moderate', IconComponent: Mountain },
+  coastal: { label: 'Coastal', color: '#06b6d4', icon: 'Waves', severity: 'moderate', IconComponent: Waves },
+  western_disturbance: { label: 'Western Disturbance', color: '#6366f1', icon: 'Wind', severity: 'moderate', IconComponent: Wind },
 };
 
 export const THRESHOLDS = [

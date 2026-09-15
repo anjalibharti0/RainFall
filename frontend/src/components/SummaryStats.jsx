@@ -9,9 +9,13 @@ export default function SummaryStats({ districts = [] }) {
     return (
       <div className="flex flex-col gap-4 h-full">
         {[1,2,3].map(i => (
-          <div key={i} className="glass-card p-5 flex items-center gap-4 flex-1 animate-pulse">
-            <div className="w-12 h-12 rounded-xl bg-white/5" />
-            <div className="space-y-2"><div className="h-3 w-24 bg-white/5 rounded" /><div className="h-6 w-16 bg-white/5 rounded" /></div>
+          <div key={i} className={`glass-card p-5 flex items-center gap-4 flex-1`}>
+            <div className="w-12 h-12 rounded-xl skeleton" />
+            <div className="space-y-2 flex-1">
+              <div className="h-3 w-24 skeleton" />
+              <div className="h-7 w-16 skeleton" />
+              <div className="h-2 w-32 skeleton" />
+            </div>
           </div>
         ))}
       </div>
@@ -31,15 +35,15 @@ export default function SummaryStats({ districts = [] }) {
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      {stats.map((s) => (
-        <div key={s.label} className="glass-card glass-card-hover p-5 flex items-center gap-4 flex-1">
+      {stats.map((s, i) => (
+        <div key={s.label} className={`glass-card glass-card-hover p-5 flex items-center gap-4 flex-1 animate-fade-slide-up delay-${i + 1}`}>
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.iconBg} flex-shrink-0`}>
             <s.icon className={`w-5 h-5 ${s.iconColor}`} />
           </div>
           <div>
             <div className={`text-[12px] font-medium ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{s.label}</div>
             <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className={`text-[28px] font-extrabold tracking-[-0.03em] ${isDark ? 'text-white' : 'text-gray-900'}`}>{s.value}</span>
+              <span className={`stat-number`}>{s.value}</span>
               <span className={`text-[14px] font-medium ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>{s.unit}</span>
               {s.badge && <span className={`text-[13px] font-bold ${s.badgeColor}`}>{s.badge}</span>}
             </div>

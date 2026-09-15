@@ -32,7 +32,7 @@ const ALERT_ROW_STYLES = {
   emergency: 'bg-red-950/60 border-red-500/30',
 };
 
-export default function Header({ selectedDate, setSelectedDate, leadTime, setLeadTime, regime, onRefresh, loading }) {
+export default function Header({ selectedDate, setSelectedDate, leadTime, setLeadTime, regime, onRefresh, loading, dataSource }) {
   const { theme, toggleTheme } = useTheme();
   const { history, unreadCount, markRead, clearAll } = useNotifications();
   const isDark = theme === 'dark';
@@ -48,7 +48,7 @@ export default function Header({ selectedDate, setSelectedDate, leadTime, setLea
     if (!searchQuery || searchQuery.length < 2) { setSearchResults([]); return; }
     setSearching(true);
     const t = setTimeout(() => {
-      fetchDistrictSearch(searchQuery).then(d => { setSearchResults(d.results || []); setSearching(false); }).catch(() => setSearching(false));
+      fetchDistrictSearch(searchQuery, selectedDate).then(d => { setSearchResults(d.results || []); setSearching(false); }).catch(() => setSearching(false));
     }, 300);
     return () => clearTimeout(t);
   }, [searchQuery]);
@@ -75,7 +75,7 @@ export default function Header({ selectedDate, setSelectedDate, leadTime, setLea
     <header className={`relative z-[9997] ${isDark ? 'bg-[#0f172a]/80 border-white/5' : 'bg-white/90 border-gray-200'} backdrop-blur-xl border-b h-[72px] transition-colors`}>
       <div className="max-w-[1800px] mx-auto px-6 h-full flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src="/src/MeghDrishti.png" alt="MeghDrishti Logo" className="w-16 h-16 rounded-xl object-contain" />
+          <img src="/MeghDrishti.png" alt="MeghDrishti Logo" className="w-16 h-16 rounded-xl object-contain" />
           <div>
             <h1 className={`text-[22px] font-bold tracking-[-0.02em] ${isDark ? 'text-white' : 'text-gray-900'}`}>
               MeghDrishti
@@ -118,6 +118,15 @@ export default function Header({ selectedDate, setSelectedDate, leadTime, setLea
               <span className="ml-1 opacity-60">({(regime.confidence * 100).toFixed(0)}%)</span>
             </div>
           )}
+
+          {/* Data Source Badge */}
+          <div className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider ${
+            dataSource === 'synthetic'
+              ? (isDark ? 'data-badge-synthetic' : 'bg-amber-50 text-amber-700 border border-amber-200')
+              : (isDark ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
+          }`}>
+            {dataSource === 'synthetic' ? 'Synthetic' : 'Live · v15'}
+          </div>
 
           {/* Alert Bell */}
           <div className="relative" ref={alertRef}>

@@ -1,0 +1,95 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - img "MeghDrishti Logo" [ref=e14]
+          - generic [ref=e15]:
+            - heading "MeghDrishti" [level=1] [ref=e16]
+            - paragraph [ref=e17]: AI Powered | Better Forecasts, Safer Tomorrow.
+        - generic [ref=e18]:
+          - combobox [ref=e19] [cursor=pointer]:
+            - option "9 Sept 2026"
+            - option "10 Sept 2026" [selected]
+            - option "11 Sept 2026"
+            - option "12 Sept 2026"
+            - option "13 Sept 2026"
+            - option "14 Sept 2026"
+            - option "15 Sept 2026"
+          - combobox [ref=e20] [cursor=pointer]:
+            - 'option "Lead: 24h" [selected]'
+            - 'option "Lead: 48h"'
+            - 'option "Lead: 72h"'
+            - 'option "Lead: 96h"'
+            - 'option "Lead: 120h"'
+          - generic [ref=e21]: Demo
+          - generic [ref=e22]:
+            - button [ref=e23] [cursor=pointer]
+            - generic:
+              - generic: Weather Alerts
+              - generic:
+                - generic:
+                  - paragraph: No alerts yet
+                  - paragraph: Alerts will appear when rainfall thresholds are breached
+          - button [ref=e28] [cursor=pointer]
+          - button [ref=e32] [cursor=pointer]
+          - button [ref=e39] [cursor=pointer]
+    - generic [ref=e42]:
+      - complementary [ref=e43]:
+        - navigation [ref=e44]:
+          - button "Dashboard" [ref=e45] [cursor=pointer]
+          - button "Regime Analysis" [ref=e50] [cursor=pointer]
+          - button "Rainfall Forecast" [active] [ref=e54] [cursor=pointer]
+          - button "Heavy Rain Probability" [ref=e58] [cursor=pointer]
+          - button "District Forecast" [ref=e62] [cursor=pointer]
+          - button "Verification Report" [ref=e67] [cursor=pointer]
+          - button "Settings" [ref=e71] [cursor=pointer]
+        - generic [ref=e76]: Smarter data.Better models.Safer communities.
+      - main [ref=e78]:
+        - generic [ref=e279]:
+          - generic [ref=e281]:
+            - generic [ref=e282]:
+              - generic [ref=e283]:
+                - heading "Rainfall Forecast Map" [level=3] [ref=e284]
+                - paragraph [ref=e285]: 0 districts shown — click markers for details
+              - generic [ref=e286]:
+                - generic [ref=e287]: <7.5
+                - generic [ref=e289]: 7-35
+                - generic [ref=e291]: 35-65
+                - generic [ref=e293]: 65-125
+                - generic [ref=e295]: ">125"
+            - generic [ref=e298]:
+              - generic:
+                - generic [ref=e299]:
+                  - button "Zoom in" [ref=e300] [cursor=pointer]: +
+                  - button "Zoom out" [disabled] [ref=e301]: −
+                - generic [ref=e302]:
+                  - link "Leaflet" [ref=e303] [cursor=pointer]:
+                    - /url: https://leafletjs.com
+                  - text: "| ©"
+                  - link "OpenStreetMap" [ref=e308] [cursor=pointer]:
+                    - /url: https://www.openstreetmap.org/copyright
+          - generic [ref=e310]:
+            - heading "7-Day Forecast Trend" [level=3] [ref=e311]
+            - paragraph [ref=e312]: Observed vs Raw NWP vs AI Corrected
+            - generic [ref=e315]:
+              - img [ref=e316]:
+                - generic [ref=e321]:
+                  - generic [ref=e322]: Sep 1
+                  - generic [ref=e324]: Sep 2
+                  - generic [ref=e326]: Sep 3
+                  - generic [ref=e328]: Sep 4
+                  - generic [ref=e330]: Sep 5
+                  - generic [ref=e332]: Sep 6
+                  - generic [ref=e334]: Sep 7
+                - generic [ref=e337]:
+                  - generic [ref=e338]: "0"
+                  - generic [ref=e340]: "15"
+                  - generic [ref=e342]: "30"
+                  - generic [ref=e344]: "45"
+                  - generic [ref=e346]: "60"
+              - list [ref=e367]:
+                - listitem [ref=e368]: Observed
+                - listitem [ref=e371]: Raw NWP
+                - listitem [ref=e374]: AI Corrected
+  - generic [aria-hidden] [ref=e278]: Sep 6

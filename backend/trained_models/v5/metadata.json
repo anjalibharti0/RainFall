@@ -1,0 +1,209 @@
+{
+  "version": "v5",
+  "created_at": "2026-09-13T14:01:06.768423",
+  "metrics": {
+    "regime_accuracy": 0.9806,
+    "regime_report": {
+      "active_monsoon": {
+        "precision": 0.9532163742690059,
+        "recall": 0.8089330024813896,
+        "f1-score": 0.8751677852348994,
+        "support": 403.0
+      },
+      "break_monsoon": {
+        "precision": 0.952303961196443,
+        "recall": 0.9577235772357724,
+        "f1-score": 0.9550060802594244,
+        "support": 1230.0
+      },
+      "coastal": {
+        "precision": 0.9784338896020539,
+        "recall": 0.9906420587470757,
+        "f1-score": 0.9845001291655903,
+        "support": 3847.0
+      },
+      "depression": {
+        "precision": 0.9454545454545454,
+        "recall": 0.7938931297709924,
+        "f1-score": 0.8630705394190872,
+        "support": 131.0
+      },
+      "orographic": {
+        "precision": 0.9855975087582717,
+        "recall": 0.9900293255131964,
+        "f1-score": 0.9878084463083976,
+        "support": 5115.0
+      },
+      "western_disturbance": {
+        "precision": 0.9897959183673469,
+        "recall": 0.9909515469935786,
+        "f1-score": 0.9903733955659276,
+        "support": 3426.0
+      },
+      "accuracy": 0.9806387789711701,
+      "macro avg": {
+        "precision": 0.9674670329412777,
+        "recall": 0.9220287734570007,
+        "f1-score": 0.942654395992221,
+        "support": 14152.0
+      },
+      "weighted avg": {
+        "precision": 0.9804792159045204,
+        "recall": 0.9806387789711701,
+        "f1-score": 0.9803168308231348,
+        "support": 14152.0
+      }
+    },
+    "raw_rmse": 24.83,
+    "raw_mae": 13.31,
+    "raw_r2": -0.867,
+    "corrected_rmse": 7.16,
+    "corrected_mae": 3.35,
+    "corrected_r2": 0.8446,
+    "rmse_improvement_pct": 71.1,
+    "regime_classifier": {
+      "accuracy": 0.9202,
+      "report": {
+        "active_monsoon": {
+          "precision": 0.42857142857142855,
+          "recall": 0.14814814814814814,
+          "f1-score": 0.22018348623853212,
+          "support": 81.0
+        },
+        "break_monsoon": {
+          "precision": 0.8467741935483871,
+          "recall": 0.8536585365853658,
+          "f1-score": 0.8502024291497976,
+          "support": 246.0
+        },
+        "coastal": {
+          "precision": 0.905055487053021,
+          "recall": 0.9532467532467532,
+          "f1-score": 0.9285262492093611,
+          "support": 770.0
+        },
+        "depression": {
+          "precision": 0.25,
+          "recall": 0.07692307692307693,
+          "f1-score": 0.11764705882352941,
+          "support": 26.0
+        },
+        "orographic": {
+          "precision": 0.9462055715658021,
+          "recall": 0.9628543499511242,
+          "f1-score": 0.9544573643410853,
+          "support": 1023.0
+        },
+        "western_disturbance": {
+          "precision": 0.9525179856115108,
+          "recall": 0.9664233576642336,
+          "f1-score": 0.9594202898550724,
+          "support": 685.0
+        },
+        "accuracy": 0.9201695513952667,
+        "macro avg": {
+          "precision": 0.7215207777250249,
+          "recall": 0.6602090370864503,
+          "f1-score": 0.6717394796028963,
+          "support": 2831.0
+        },
+        "weighted avg": {
+          "precision": 0.9066960728412982,
+          "recall": 0.9201695513952667,
+          "f1-score": 0.9108518112498926,
+          "support": 2831.0
+        }
+      },
+      "n_train": 11321,
+      "n_test": 2831,
+      "best_params": {
+        "n_estimators": 250,
+        "max_depth": 8,
+        "learning_rate": 0.1
+      },
+      "cv_mean": 0.9242,
+      "top_features": {
+        "wind_speed": 0.1891,
+        "month": 0.1608,
+        "cape": 0.1307,
+        "radiation": 0.0829,
+        "pressure": 0.0813
+      }
+    },
+    "bias_corrector": {
+      "active_monsoon": {
+        "rmse": 24.457,
+        "mae": 0.958,
+        "r2": 0.9975,
+        "n_samples": 403
+      },
+      "break_monsoon": {
+        "rmse": 9.474,
+        "mae": 0.631,
+        "r2": 0.9756,
+        "n_samples": 1230
+      },
+      "depression": {
+        "rmse": 21.341,
+        "mae": 0.914,
+        "r2": 0.9959,
+        "n_samples": 131
+      },
+      "orographic": {
+        "rmse": 15.144,
+        "mae": 4.502,
+        "r2": 0.791,
+        "n_samples": 5115
+      },
+      "coastal": {
+        "rmse": 8.84,
+        "mae": 1.688,
+        "r2": 0.643,
+        "n_samples": 3847
+      },
+      "western_disturbance": {
+        "rmse": 15.356,
+        "mae": 5.021,
+        "r2": 0.709,
+        "n_samples": 3426
+      }
+    },
+    "probability_estimator": {
+      "7.5": {
+        "mse": 0.06116,
+        "brier": 0.352,
+        "n_samples": 14152
+      },
+      "64.5": {
+        "mse": 0.06116,
+        "brier": 0.352,
+        "n_samples": 14152
+      },
+      "124.5": {
+        "mse": 0.06116,
+        "brier": 0.352,
+        "n_samples": 14152
+      },
+      "244.5": {
+        "mse": 0.06116,
+        "brier": 0.352,
+        "n_samples": 14152
+      }
+    }
+  },
+  "training_info": {
+    "train_dates": "2024-06-01 to 2024-09-30",
+    "n_districts": 116,
+    "n_dates": 122,
+    "regime_distribution": {
+      "orographic": 5115,
+      "coastal": 3847,
+      "western_disturbance": 3426,
+      "break_monsoon": 1230,
+      "active_monsoon": 403,
+      "depression": 131
+    }
+  },
+  "dataset_hash": "200dfc619fdd",
+  "n_samples": 14152
+}
