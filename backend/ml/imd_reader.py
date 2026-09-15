@@ -6,7 +6,7 @@ import struct
 import numpy as np
 import os
 
- IMD_GRID = {
+IMD_GRID = {
     "nrows": 135,
     "ncols": 129,
     "lat_max": 37.5,

@@ -1,0 +1,159 @@
+- generic [ref=f4e1]:
+  - generic [ref=f4e3]:
+    - banner [ref=f4e11]:
+      - generic [ref=f4e12]:
+        - generic [ref=f4e13]:
+          - img "MeghDrishti Logo" [ref=f4e14]
+          - generic [ref=f4e15]:
+            - heading "MeghDrishti" [level=1] [ref=f4e16]
+            - paragraph [ref=f4e17]: AI Powered | Better Forecasts, Safer Tomorrow.
+        - generic [ref=f4e18]:
+          - combobox [ref=f4e19] [cursor=pointer]:
+            - option "9 Sept 2026"
+            - option "10 Sept 2026" [selected]
+            - option "11 Sept 2026"
+            - option "12 Sept 2026"
+            - option "13 Sept 2026"
+            - option "14 Sept 2026"
+            - option "15 Sept 2026"
+          - combobox [ref=f4e20] [cursor=pointer]:
+            - 'option "Lead: 24h" [selected]'
+            - 'option "Lead: 48h"'
+            - 'option "Lead: 72h"'
+            - 'option "Lead: 96h"'
+            - 'option "Lead: 120h"'
+          - generic [ref=f4e21]: Live · v15
+          - generic [ref=f4e22]:
+            - button [ref=f4e23] [cursor=pointer]
+            - generic:
+              - generic: Weather Alerts
+              - generic:
+                - generic:
+                  - paragraph: No alerts yet
+                  - paragraph: Alerts will appear when rainfall thresholds are breached
+          - button [ref=f4e28] [cursor=pointer]
+          - button [ref=f4e32] [cursor=pointer]
+          - button [ref=f4e39] [cursor=pointer]
+    - generic [ref=f4e42]:
+      - complementary [ref=f4e43]:
+        - navigation [ref=f4e44]:
+          - button "Dashboard" [active] [ref=f4e45] [cursor=pointer]
+          - button "Regime Analysis" [ref=f4e50] [cursor=pointer]
+          - button "Rainfall Forecast" [ref=f4e54] [cursor=pointer]
+          - button "Heavy Rain Probability" [ref=f4e58] [cursor=pointer]
+          - button "District Forecast" [ref=f4e62] [cursor=pointer]
+          - button "Verification Report" [ref=f4e67] [cursor=pointer]
+          - button "Settings" [ref=f4e71] [cursor=pointer]
+        - generic [ref=f4e76]: Smarter data.Better models.Safer communities.
+      - main [ref=f4e78]:
+        - generic [ref=f4e79]:
+          - generic [ref=f4e90]:
+            - generic [ref=f4e91]: Current Weather Regime
+            - generic [ref=f4e92]:
+              - heading "Active Monsoon" [level=2] [ref=f4e93]
+              - generic [ref=f4e94]: "Confidence: 85%"
+            - paragraph [ref=f4e95]: Strong monsoon flow over central India with widespread rainfall activity.
+          - generic [ref=f4e116]:
+            - generic [ref=f4e118]:
+              - generic [ref=f4e119]:
+                - generic [ref=f4e120]:
+                  - heading "Rainfall Forecast Map" [level=3] [ref=f4e121]
+                  - paragraph [ref=f4e122]: 0 districts shown — click markers for details
+                - generic [ref=f4e123]:
+                  - generic [ref=f4e124]: <7.5
+                  - generic [ref=f4e126]: 7-35
+                  - generic [ref=f4e128]: 35-65
+                  - generic [ref=f4e130]: 65-125
+                  - generic [ref=f4e132]: ">125"
+              - generic [ref=f4e135]:
+                - generic:
+                  - generic [ref=f4e136]:
+                    - button "Zoom in" [ref=f4e137] [cursor=pointer]: +
+                    - button "Zoom out" [disabled] [ref=f4e138]: −
+                  - generic [ref=f4e139]:
+                    - link "Leaflet" [ref=f4e140] [cursor=pointer]:
+                      - /url: https://leafletjs.com
+                    - text: "| ©"
+                    - link "OpenStreetMap" [ref=f4e145] [cursor=pointer]:
+                      - /url: https://www.openstreetmap.org/copyright
+            - generic [ref=f4e147]:
+              - generic [ref=f4e148]:
+                - textbox "Search 0 districts..." [ref=f4e152]
+                - generic [ref=f4e153]: "0"
+              - generic [ref=f4e154]:
+                - table:
+                  - rowgroup
+                - generic [ref=f4e155]: No matches
+          - generic [ref=f4e156]:
+            - heading "Heavy Rainfall Probability" [level=3] [ref=f4e160]
+            - generic [ref=f4e167]:
+              - heading "7-Day Forecast Trend" [level=3] [ref=f4e168]
+              - paragraph [ref=f4e169]: Observed vs Raw NWP vs AI Corrected
+              - generic [ref=f4e172]:
+                - img [ref=f4e173]:
+                  - generic [ref=f4e178]:
+                    - generic [ref=f4e179]: Sep 1
+                    - generic [ref=f4e181]: Sep 2
+                    - generic [ref=f4e183]: Sep 3
+                    - generic [ref=f4e185]: Sep 4
+                    - generic [ref=f4e187]: Sep 5
+                    - generic [ref=f4e189]: Sep 6
+                    - generic [ref=f4e191]: Sep 7
+                  - generic [ref=f4e194]:
+                    - generic [ref=f4e195]: "0"
+                    - generic [ref=f4e197]: "15"
+                    - generic [ref=f4e199]: "30"
+                    - generic [ref=f4e201]: "45"
+                    - generic [ref=f4e203]: "60"
+                - list [ref=f4e224]:
+                  - listitem [ref=f4e225]: Observed
+                  - listitem [ref=f4e228]: Raw NWP
+                  - listitem [ref=f4e231]: AI Corrected
+            - generic [ref=f4e235]:
+              - heading "Verification Report" [level=3] [ref=f4e237]
+              - table [ref=f4e239]:
+                - rowgroup [ref=f4e240]:
+                  - row [ref=f4e241]:
+                    - columnheader "Metric" [ref=f4e242]
+                    - columnheader "Raw NWP" [ref=f4e243]
+                    - columnheader "Regime-Aware AI" [ref=f4e244]
+                - rowgroup [ref=f4e245]:
+                  - row [ref=f4e246]:
+                    - cell "RMSE (mm)" [ref=f4e247]
+                    - cell "11.14" [ref=f4e248]
+                    - cell "4.48↑" [ref=f4e249]
+                  - row [ref=f4e250]:
+                    - cell "MAE (mm)" [ref=f4e251]
+                    - cell "8.23" [ref=f4e252]
+                    - cell "3.51↑" [ref=f4e253]
+                  - row [ref=f4e254]:
+                    - cell "Bias Ratio" [ref=f4e255]
+                    - cell "1.16" [ref=f4e256]
+                    - cell "1.03↑" [ref=f4e257]
+                  - row [ref=f4e258]:
+                    - cell "CSI" [ref=f4e259]
+                    - cell "0.67" [ref=f4e260]
+                    - cell "0.86↑" [ref=f4e261]
+                  - row [ref=f4e262]:
+                    - cell "POD" [ref=f4e263]
+                    - cell "0.92" [ref=f4e264]
+                    - cell "0.96↑" [ref=f4e265]
+                  - row [ref=f4e266]:
+                    - cell "FAR" [ref=f4e267]
+                    - cell "0.29" [ref=f4e268]
+                    - cell "0.11↑" [ref=f4e269]
+                  - row [ref=f4e270]:
+                    - cell "ETS" [ref=f4e271]
+                    - cell "0.62" [ref=f4e272]
+                    - cell "0.84↑" [ref=f4e273]
+                  - row [ref=f4e274]:
+                    - cell "FSS" [ref=f4e275]
+                    - cell "0.92" [ref=f4e276]
+                    - cell "0.99↑" [ref=f4e277]
+          - generic [ref=f4e279]:
+            - heading "Regime Distribution" [level=3] [ref=f4e280]
+            - paragraph [ref=f4e281]: By district count
+            - img [ref=f4e283]:
+              - generic [ref=f4e284]: "1"
+              - generic [ref=f4e285]: Districts
+  - generic [aria-hidden] [ref=f4e286]: "0"

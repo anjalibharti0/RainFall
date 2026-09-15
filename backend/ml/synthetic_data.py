@@ -5,64 +5,46 @@ REGIMES = ["active_monsoon", "break_monsoon", "depression", "orographic", "coast
 
 REGIME_FEATURE_PROFILES = {
     "active_monsoon": {
-        "wind_shear": (15, 25),
-        "olr": (-30, -10),
+        "wind_speed": (15, 30),
         "cape": (1000, 2500),
-        "vorticity": (1.5, 4.0),
-        "moisture_flux": (200, 500),
-        "humidity_700": (70, 90),
         "pressure": (998, 1005),
-        "sst": (28, 31),
+        "radiation": (5, 15),
+        "temp_range": (2, 6),
     },
     "break_monsoon": {
-        "wind_shear": (5, 12),
-        "olr": (0, 15),
+        "wind_speed": (3, 10),
         "cape": (200, 800),
-        "vorticity": (-0.5, 1.0),
-        "moisture_flux": (50, 150),
-        "humidity_700": (40, 65),
         "pressure": (1006, 1012),
-        "sst": (27, 29),
+        "radiation": (15, 25),
+        "temp_range": (5, 12),
     },
     "depression": {
-        "wind_shear": (10, 20),
-        "olr": (-40, -15),
+        "wind_speed": (20, 40),
         "cape": (1500, 3500),
-        "vorticity": (2.5, 6.0),
-        "moisture_flux": (300, 700),
-        "humidity_700": (75, 95),
         "pressure": (990, 1000),
-        "sst": (29, 32),
+        "radiation": (2, 10),
+        "temp_range": (1, 4),
     },
     "orographic": {
-        "wind_shear": (8, 18),
-        "olr": (-20, -5),
+        "wind_speed": (8, 20),
         "cape": (500, 1500),
-        "vorticity": (0.5, 2.5),
-        "moisture_flux": (150, 400),
-        "humidity_700": (60, 85),
         "pressure": (1002, 1008),
-        "sst": (27, 30),
+        "radiation": (10, 20),
+        "temp_range": (4, 10),
     },
     "coastal": {
-        "wind_shear": (6, 15),
-        "olr": (-15, 0),
+        "wind_speed": (10, 22),
         "cape": (800, 2000),
-        "vorticity": (0.3, 2.0),
-        "moisture_flux": (200, 450),
-        "humidity_700": (65, 88),
         "pressure": (1003, 1009),
-        "sst": (28, 31),
+        "radiation": (8, 18),
+        "temp_range": (3, 7),
     },
     "western_disturbance": {
-        "wind_shear": (12, 22),
-        "olr": (-10, 5),
+        "wind_speed": (12, 28),
         "cape": (300, 1000),
-        "vorticity": (0.8, 3.0),
-        "moisture_flux": (100, 300),
-        "humidity_700": (45, 70),
         "pressure": (1004, 1012),
-        "sst": (24, 28),
+        "radiation": (12, 22),
+        "temp_range": (6, 14),
     },
 }
 
@@ -84,7 +66,6 @@ BIAS_FACTORS = {
     "western_disturbance": 1.15,
 }
 
-# Regional effects - some zones get more rainfall
 ZONE_EFFECTS = {
     "west_coast": 1.4,
     "central": 1.1,
@@ -94,7 +75,6 @@ ZONE_EFFECTS = {
     "northeast": 1.5,
 }
 
-# Lead time degradation - forecasts get worse further out
 LEAD_TIME_DEGRADATION = {
     24: 1.0,
     48: 1.15,
@@ -103,7 +83,15 @@ LEAD_TIME_DEGRADATION = {
     120: 1.90,
 }
 
-FEATURE_NAMES = ["wind_shear", "olr", "cape", "vorticity", "moisture_flux", "humidity_700", "pressure", "sst"]
+FEATURE_NAMES = [
+    "raw_rainfall", "wind_speed", "wind_dir", "cape", "pressure",
+    "radiation", "temp_range", "temp_mean",
+    "day_of_year", "month", "monsoon_phase",
+    "is_peak_monsoon", "latitude", "longitude",
+]
+
+MONSOON_PHASES = {6: 1, 7: 2, 8: 2, 9: 3}
+PEAK_MONSOON_MONTHS = {7, 8}
 
 
 def _sample(profile, size=1):
@@ -113,64 +101,57 @@ def _sample(profile, size=1):
     return np.random.uniform(lo, hi, size)
 
 
-def _correlated_features(regime, rng):
-    """Generate correlated features for a regime - not independent."""
+def _correlated_features_v2(regime, rng, lat=28.0, lon=77.0, month=7):
+    """Generate correlated V2 features for a regime."""
     fp = REGIME_FEATURE_PROFILES[regime]
 
-    wind_shear = _sample(fp["wind_shear"])
-    olr = _sample(fp["olr"])
+    wind_speed = _sample(fp["wind_speed"])
     cape = _sample(fp["cape"])
-    vorticity = _sample(fp["vorticity"])
-    moisture_flux = _sample(fp["moisture_flux"])
-    humidity_700 = _sample(fp["humidity_700"])
     pressure = _sample(fp["pressure"])
-    sst = _sample(fp["sst"])
+    radiation = _sample(fp["radiation"])
+    temp_range = _sample(fp["temp_range"])
 
-    # Add correlations - high wind shear often means high vorticity
-    vorticity += (wind_shear - 15) * 0.1 + rng.normal(0, 0.2)
-    cape += (humidity_700 - 70) * 15 + rng.normal(0, 50)
-    moisture_flux += (humidity_700 - 70) * 5 + rng.normal(0, 20)
-    olr -= (cape - 1000) * 0.005 + rng.normal(0, 1)
+    wind_dir = float(rng.uniform(0, 360))
+    temp_mean = float(rng.uniform(24, 35))
 
-    return {
-        "wind_shear": float(np.clip(wind_shear, 0, 40)),
-        "olr": float(np.clip(olr, -50, 25)),
+    features = {
+        "raw_rainfall": 0.0,
+        "wind_speed": float(np.clip(wind_speed, 0, 50)),
+        "wind_dir": wind_dir,
         "cape": float(np.clip(cape, 0, 5000)),
-        "vorticity": float(np.clip(vorticity, -2, 8)),
-        "moisture_flux": float(np.clip(moisture_flux, 0, 800)),
-        "humidity_700": float(np.clip(humidity_700, 20, 100)),
         "pressure": float(np.clip(pressure, 985, 1020)),
-        "sst": float(np.clip(sst, 20, 35)),
+        "radiation": float(np.clip(radiation, 0, 30)),
+        "temp_range": float(np.clip(temp_range, 0, 20)),
+        "temp_mean": float(np.clip(temp_mean, 15, 42)),
+        "day_of_year": 180,
+        "month": month,
+        "monsoon_phase": MONSOON_PHASES.get(month, 0),
+        "is_peak_monsoon": 1 if month in PEAK_MONSOON_MONTHS else 0,
+        "latitude": lat,
+        "longitude": lon,
     }
+    return features
 
 
 def _calculate_realistic_rainfall(regime, features, zone, lead_time, rng):
-    """Calculate realistic rainfall based on regime, features, zone, and lead time."""
     rp = REGIME_RAINFALL_PROFILES[regime]
     base_rain = _sample(rp)
-
-    # Zone adjustment
     zone_factor = ZONE_EFFECTS.get(zone, 1.0)
     base_rain *= zone_factor
 
-    # Feature-based adjustment
-    if features["humidity_700"] > 80:
-        base_rain *= 1.3
-    elif features["humidity_700"] < 50:
-        base_rain *= 0.6
-
     if features["cape"] > 2000:
         base_rain *= 1.2
+    if features["wind_speed"] > 25:
+        base_rain *= 1.3
+    if features["pressure"] < 998:
+        base_rain *= 1.2
+    if features["is_peak_monsoon"]:
+        base_rain *= 1.15
 
-    if features["vorticity"] > 3:
-        base_rain *= 1.4
-
-    # Lead time makes forecast less accurate
     lt_factor = LEAD_TIME_DEGRADATION.get(lead_time, 1.0)
     noise = rng.normal(0, base_rain * 0.15 * lt_factor)
     base_rain += noise
 
-    # Add occasional extreme events (2% chance)
     if rng.random() < 0.02:
         base_rain *= rng.uniform(2.0, 4.0)
 
@@ -178,7 +159,6 @@ def _calculate_realistic_rainfall(regime, features, zone, lead_time, rng):
 
 
 def generate_training_data(n_samples=10000, seed=42):
-    """Generate strong synthetic training data with realistic patterns."""
     rng = np.random.RandomState(seed)
     rows = []
     regime_weights = [0.25, 0.20, 0.15, 0.20, 0.15, 0.05]
@@ -189,24 +169,25 @@ def generate_training_data(n_samples=10000, seed=42):
         regime = REGIMES[regime_idx]
         zone = zones[rng.choice(len(zones))]
         lead_time = rng.choice([24, 48, 72, 96, 120])
+        month = rng.choice([6, 7, 8, 9])
+        lat = float(rng.uniform(20, 37.5))
+        lon = float(rng.uniform(65, 80))
 
-        features = _correlated_features(regime, rng)
+        features = _correlated_features_v2(regime, rng, lat, lon, month)
         raw_rainfall = _calculate_realistic_rainfall(regime, features, zone, lead_time, rng)
+        features["raw_rainfall"] = round(raw_rainfall, 2)
 
-        # Bias correction
         bias = BIAS_FACTORS[regime] + rng.normal(0, 0.1)
         corrected_rainfall = max(0, raw_rainfall / bias + rng.normal(0, raw_rainfall * 0.08))
 
         row = {
             **features,
-            "raw_rainfall": round(raw_rainfall, 2),
             "regime": regime,
             "zone": zone,
             "lead_time": lead_time,
-            "corrected_rainfall": round(corrected_rainfall, 2),
+            "observed_rainfall": round(corrected_rainfall, 2),
         }
 
-        # Calculate exceedance probabilities using logistic function
         for t in [7.5, 64.5, 124.5, 244.5]:
             if corrected_rainfall > t * 1.5:
                 prob = rng.uniform(0.85, 0.99)
@@ -229,13 +210,13 @@ def generate_training_data(n_samples=10000, seed=42):
 
 
 def classify_regime(features):
-    """Classify which regime the atmospheric features match."""
     best_regime = "break_monsoon"
     best_score = float("inf")
     for regime, profile in REGIME_FEATURE_PROFILES.items():
         score = sum(
             (features.get(k, 0) - (lo + hi) / 2) ** 2 / max((hi - lo) ** 2, 1)
             for k, (lo, hi) in profile.items()
+            if k in features
         )
         if score < best_score:
             best_score = score
@@ -244,36 +225,41 @@ def classify_regime(features):
 
 
 def generate_synthetic_forecast(forecast_date="2026-09-09", lead_time=24):
-    """Generate synthetic forecast with realistic patterns."""
     rng = np.random.RandomState(hash(forecast_date) % 2**31 + lead_time)
     regime_idx = rng.choice(6, p=[0.25, 0.20, 0.15, 0.20, 0.15, 0.05])
     regime = REGIMES[regime_idx]
     confidence = float(np.clip(rng.uniform(0.70, 0.95), 0.70, 0.95))
-    features = _correlated_features(regime, rng)
+
+    from datetime import datetime
+    try:
+        dt = datetime.strptime(forecast_date[:10], "%Y-%m-%d")
+        month = dt.month
+    except Exception:
+        month = 7
+
+    features = _correlated_features_v2(regime, rng, lat=28.0, lon=77.0, month=month)
     regime_info = {"type": regime, "confidence": confidence, "features": features}
 
-    # Read districts from file
     try:
         from ml.all_districts import DISTRICTS
     except ImportError:
         DISTRICTS = []
 
-    lead_factor = LEAD_TIME_DEGRADATION.get(lead_time, 1.0)
     district_forecasts = []
 
     for d in DISTRICTS:
         zone = d.get("zone", "central")
+        dlat = d["centroid_lat"]
+        dlon = d["centroid_lon"]
         raw = _calculate_realistic_rainfall(regime, features, zone, lead_time, rng)
         bias = BIAS_FACTORS[regime] + rng.normal(0, 0.08)
         corrected = float(max(0, raw / bias + rng.normal(0, raw * 0.06)))
 
-        # Each district gets its own regime based on local features
-        district_features = _correlated_features(regime, rng)
-        district_features["pressure"] = float(np.clip(district_features["pressure"] + (d["centroid_lat"] - 20) * 0.3, 985, 1020))
-        district_features["sst"] = float(np.clip(district_features["sst"] - abs(d["centroid_lat"] - 15) * 0.08, 24, 33))
+        district_features = _correlated_features_v2(regime, rng, dlat, dlon, month)
+        district_features["raw_rainfall"] = round(raw, 2)
         district_regime = classify_regime(district_features)
 
-        thresholds = {}
+        probs = {}
         for t, key in [(7.5, "p_moderate"), (64.5, "p_heavy"), (124.5, "p_very_heavy"), (244.5, "p_extreme")]:
             if corrected > t * 1.5:
                 prob = rng.uniform(0.85, 0.99)
@@ -285,19 +271,19 @@ def generate_synthetic_forecast(forecast_date="2026-09-09", lead_time=24):
                 prob = rng.uniform(0.05, 0.25)
             else:
                 prob = rng.uniform(0.001, 0.05)
-            thresholds[key] = round(float(np.clip(prob, 0, 1)), 3)
+            probs[key] = round(float(np.clip(prob, 0, 1)), 3)
 
         district_forecasts.append({
             "district_id": d["district_id"],
             "name": d["district_name"],
             "state": d["state_name"],
             "zone": zone,
-            "lat": d["centroid_lat"],
-            "lon": d["centroid_lon"],
+            "lat": dlat,
+            "lon": dlon,
             "raw": round(raw, 1),
             "corrected": round(corrected, 1),
             "regime": district_regime,
-            **thresholds,
+            **probs,
         })
 
     return {"regime": regime_info, "districts": district_forecasts}

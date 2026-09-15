@@ -7,6 +7,7 @@ export default function RegimePanel({ regime }) {
   const regimeType = regime?.type || 'active_monsoon';
   const regimeInfo = REGIMES[regimeType] || REGIMES.active_monsoon;
   const confidence = regime?.confidence || 0.85;
+  const IconComp = regimeInfo.IconComponent;
 
   return (
     <div className={`rounded-2xl p-6 border relative overflow-hidden ${
@@ -17,8 +18,8 @@ export default function RegimePanel({ regime }) {
       <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4" />
       <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
       <div className="relative flex items-start gap-4 text-white">
-        <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center text-3xl flex-shrink-0 border border-white/10">
-          {regimeInfo.icon}
+        <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-white/10">
+          {IconComp && <IconComp className="w-8 h-8 text-white" />}
         </div>
         <div className="flex-1">
           <div className="text-[13px] font-medium text-cyan-200/70 mb-1">Current Weather Regime</div>
@@ -29,7 +30,12 @@ export default function RegimePanel({ regime }) {
             </span>
           </div>
           <p className="text-[13px] text-cyan-100/60 leading-relaxed max-w-md">
-            Strong monsoon flow over central India with widespread rainfall activity.
+            {regimeType === 'active_monsoon' && 'Strong monsoon flow over central India with widespread rainfall activity.'}
+            {regimeType === 'break_monsoon' && 'Suppressed rainfall over central India with monsoon trough weakened.'}
+            {regimeType === 'depression' && 'Cyclonic circulation over Bay of Bengal bringing heavy rainfall to coastal and central regions.'}
+            {regimeType === 'orographic' && 'Terrain-enhanced rainfall over Western Ghats and northeastern hills.'}
+            {regimeType === 'coastal' && 'Sea-breeze convergence zones triggering localized heavy rainfall along coast.'}
+            {regimeType === 'western_disturbance' && 'Extratropical system from Mediterranean bringing winter rainfall to northwest India.'}
           </p>
         </div>
       </div>

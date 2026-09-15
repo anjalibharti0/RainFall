@@ -75,8 +75,8 @@ export function sendBrowserNotification({ title, message, type }) {
   try {
     const notif = new Notification(`${iconMap[type] || '🌧'} ${title}`, {
       body: message,
-      icon: '/src/MeghDrishti.png',
-      badge: '/src/MeghDrishti.png',
+      icon: '/MeghDrishti.png',
+      badge: '/MeghDrishti.png',
       tag: `meghdrishti-${type}`,
       requireInteraction: type === 'emergency' || type === 'critical',
       silent: true,

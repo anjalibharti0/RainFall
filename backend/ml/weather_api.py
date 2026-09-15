@@ -1,11 +1,10 @@
 import requests
 import numpy as np
 import time
+from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 OPEN_METEO_FORECAST = "https://api.open-meteo.com/v1/forecast"
-
-ML_FEATURE_KEYS = ["wind_shear", "olr", "cape", "vorticity", "moisture_flux", "humidity_700"]
 
 ALL_HOURLY = ",".join([
     "temperature_2m", "precipitation", "cape",
@@ -16,6 +15,9 @@ ALL_HOURLY = ",".join([
     "wind_speed_200hPa", "wind_direction_200hPa",
 ])
 
+MONSOON_PHASES = {6: 1, 7: 2, 8: 2, 9: 3}
+PEAK_MONSOON_MONTHS = {7, 8}
+
 
 def _safe_mean(values):
     clean = [v for v in values if v is not None]
@@ -23,22 +25,55 @@ def _safe_mean(values):
 
 
 def fetch_open_meteo(lat, lon, date):
-    """Single API call for surface + pressure level data."""
+    from datetime import date as _date
     try:
-        resp = requests.get(OPEN_METEO_FORECAST, params={
+        params = {
             "latitude": lat, "longitude": lon,
-            "start_date": date, "end_date": date,
             "hourly": ALL_HOURLY,
             "timezone": "Asia/Kolkata",
-        }, timeout=15)
+        }
+        req = datetime.strptime(date[:10], "%Y-%m-%d").date()
+        days_ago = (_date.today() - req).days
+        if days_ago < 0:
+            # future date -> use standard forecast range
+            params["start_date"] = date
+            params["end_date"] = date
+        elif days_ago == 0:
+            params["start_date"] = date
+            params["end_date"] = date
+        elif 0 < days_ago <= 85:
+            # past within past_days window: past_days is exclusive with start/end dates
+            params["past_days"] = days_ago + 7
+        else:
+            return None
+
+        resp = requests.get(OPEN_METEO_FORECAST, params=params, timeout=15)
         resp.raise_for_status()
-        return resp.json()
+        data = resp.json()
+        if "hourly" not in data:
+            return None
+
+        if days_ago > 0:
+            # Roll the hourly series back to just the requested date.
+            hours = data["hourly"]
+            times = hours.get("time", [])
+            keep = [i for i, t in enumerate(times) if t[:10] == date[:10]]
+            if not keep:
+                return None
+            out = {"time": [times[i] for i in keep]}
+            for key, vals in hours.items():
+                if key != "time" and len(vals) == len(times):
+                    out[key] = [vals[i] for i in keep]
+                elif key != "time":
+                    out[key] = list(vals)
+            data = {"hourly": out}
+        return data
     except Exception:
         return None
 
 
-def compute_ml_features(data):
-    """Derive 6 ML features from a single Open-Meteo response."""
+def compute_ml_features_v2(data, lat=0, lon=0, date_str=None):
+    """V2 features: no circular deps, temporal+spatial."""
     if not data or "hourly" not in data:
         return None, None
 
@@ -47,56 +82,63 @@ def compute_ml_features(data):
     def safe(key):
         return _safe_mean(h.get(key, []))
 
-    w10 = safe("wind_speed_10m")
-    wd10 = safe("wind_direction_10m")
-    w700 = safe("wind_speed_700hPa")
-    wd700 = safe("wind_direction_700hPa")
-    w200 = safe("wind_speed_200hPa")
-    cape = safe("cape")
-    rh700 = safe("relative_humidity_700hPa")
-    temp700 = safe("temperature_700hPa")
+    precip = safe("precipitation") or 0
+    t2m = safe("temperature_2m") or 27
+    wind10 = safe("wind_speed_10m") or 0
+    wind_dir = safe("wind_direction_10m") or 0
+    cape = safe("cape") or 500
+    pressure = safe("surface_pressure") or 1013
+    radiation_raw = safe("cloud_cover")
 
-    ml = {}
-
-    w10v = w10 or 0
-    w200v = w200 or 0
-    ml["wind_shear"] = round(max(0, w200v - w10v), 2)
-
-    ml["cape"] = round(cape, 1) if cape and cape > 0 else 500.0
-    ml["humidity_700"] = round(rh700, 1) if rh700 is not None else 60.0
-
-    if w700 is not None and rh700 is not None:
-        ml["moisture_flux"] = round(w700 * (rh700 / 100.0) * 15, 1)
-    elif w700 is not None:
-        ml["moisture_flux"] = round(w700 * 8, 1)
+    if radiation_raw is not None:
+        radiation = round(max(0, 25 - radiation_raw * 0.25), 1)
     else:
-        ml["moisture_flux"] = 200.0
+        radiation = 15.0
 
-    if temp700 is not None:
-        ml["olr"] = round(-5 - (temp700 - 5) * 1.5, 1)
-    else:
-        ml["olr"] = -10.0
-
-    if w700 is not None and wd700 is not None:
-        ml["vorticity"] = round((w700 / 50) * np.sin(np.radians(wd700)), 2)
-    else:
-        ml["vorticity"] = 1.0
-
-    raw = {
-        "precip": safe("precipitation") or 0,
-        "temp": safe("temperature_2m") or 0,
-        "cloud": safe("cloud_cover") or 0,
-        "pressure": safe("surface_pressure") or 1013,
-        "rh_sfc": safe("relative_humidity_2m") if "relative_humidity_2m" in h else (safe("temperature_2m") or 50),
+    features = {
+        "raw_rainfall": round(precip, 2),
+        "wind_speed": round(wind10, 2),
+        "wind_dir": round(wind_dir, 1),
+        "cape": round(max(0, cape), 1),
+        "pressure": round(pressure, 1),
+        "radiation": radiation,
+        "temp_range": round(3.0, 1),
+        "temp_mean": round(t2m, 1),
     }
 
-    return ml, raw
+    if date_str and len(date_str) >= 8:
+        dt = datetime.strptime(date_str[:10], "%Y-%m-%d")
+        features["day_of_year"] = dt.timetuple().tm_yday
+        features["month"] = dt.month
+        features["monsoon_phase"] = MONSOON_PHASES.get(dt.month, 0)
+        features["is_peak_monsoon"] = 1 if dt.month in PEAK_MONSOON_MONTHS else 0
+    else:
+        features["day_of_year"] = 180
+        features["month"] = 7
+        features["monsoon_phase"] = 2
+        features["is_peak_monsoon"] = 1
+
+    features["latitude"] = lat
+    features["longitude"] = lon
+
+    raw = {
+        "precip": precip,
+        "temp": t2m,
+        "wind": wind10,
+        "pressure": pressure,
+    }
+
+    return features, raw
 
 
 def fetch_district_weather(district, date):
-    """Fetch real weather for one district (single API call)."""
     data = fetch_open_meteo(district["centroid_lat"], district["centroid_lon"], date)
-    ml, raw = compute_ml_features(data)
+    ml, raw = compute_ml_features_v2(
+        data,
+        lat=district["centroid_lat"],
+        lon=district["centroid_lon"],
+        date_str=date,
+    )
     if ml:
         return {
             "district_id": district["district_id"],
@@ -109,7 +151,6 @@ def fetch_district_weather(district, date):
 
 
 def fetch_all_districts_weather(districts, date, max_workers=8):
-    """Fetch real weather for all districts in parallel with batching."""
     results = {}
     batch_size = 40
 
@@ -126,7 +167,6 @@ def fetch_all_districts_weather(districts, date, max_workers=8):
                 except Exception:
                     pass
 
-        fetched_so_far = len(results)
         if i + batch_size < len(districts):
             time.sleep(0.3)
 
@@ -138,8 +178,18 @@ def get_aggregate_features(district_weather):
     good = [dw["ml_features"] for dw in district_weather.values() if dw and "ml_features" in dw]
     if not good:
         return None
+
     agg = {}
-    for key in ML_FEATURE_KEYS:
+    for key in ["wind_speed", "wind_dir", "cape", "pressure", "radiation", "temp_range", "temp_mean"]:
         vals = [f[key] for f in good if key in f and f[key] is not None]
         agg[key] = round(float(np.mean(vals)), 2) if vals else 0.0
+
+    agg["raw_rainfall"] = round(np.mean([f.get("raw_rainfall", 0) for f in good]), 2)
+    agg["day_of_year"] = good[0].get("day_of_year", 180)
+    agg["month"] = good[0].get("month", 7)
+    agg["monsoon_phase"] = good[0].get("monsoon_phase", 2)
+    agg["is_peak_monsoon"] = good[0].get("is_peak_monsoon", 1)
+    agg["latitude"] = round(np.mean([f.get("latitude", 28) for f in good]), 2)
+    agg["longitude"] = round(np.mean([f.get("longitude", 77) for f in good]), 2)
+
     return agg
